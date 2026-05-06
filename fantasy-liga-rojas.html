@@ -176,7 +176,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .sup-del{position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:rgba(220,38,38,.8);border:none;border-radius:50%;color:#fff;font-size:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;}
 
 /* PANEL */
-.panel{width:190px;background:var(--bg2);border-left:1px solid var(--borde);display:flex;flex-direction:column;overflow:hidden;}
+.panel{width:240px;background:var(--bg2);border-left:1px solid var(--borde);display:flex;flex-direction:column;overflow:hidden;}
 
 /* MOBILE MODAL JUGADORES */
 .mob-lista-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:150;flex-direction:column;}
@@ -753,8 +753,9 @@ function actualizarPresup(){
 
 function actualizarAvisoCambio(){
   const av=document.getElementById('e-aviso');if(!av) return;
-  if(enVeda){av.className='aviso-c aviso-veda';av.textContent='🔒 VEDA ACTIVA';return;}
-  if(esPrimeraFecha){av.className='aviso-c aviso-ok';av.textContent='✓ Edición libre';return;}
+  if(enVeda){av.style.display='flex';av.className='aviso-c aviso-veda';av.textContent='🔒 VEDA ACTIVA';return;}
+  if(esPrimeraFecha){av.style.display='none';return;}
+  av.style.display='flex';
   av.className=`aviso-c ${cambiosUsados===0?'aviso-ok':'aviso-warn'}`;
   av.textContent=cambiosUsados===0?'✓ 1 cambio gratis':`⚠ Extra: $${COSTO_EXTRA.toLocaleString()}`;
 }
