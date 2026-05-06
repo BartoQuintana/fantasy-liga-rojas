@@ -522,18 +522,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
   </nav>
 </div>
 
-<!-- MODAL CAMBIO -->
-<div class="modal-overlay" id="modal-cambio">
-  <div class="modal">
-    <h3 id="mc-titulo">Confirmar cambio</h3>
-    <p id="mc-desc">—</p>
-    <div class="modal-btns">
-      <button class="btn" style="flex:1" onclick="cerrarModalCambio()">Cancelar</button>
-      <button class="btn btn-g" style="flex:1" onclick="ejecutarCambio()">Confirmar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL CAPITÁN -->
 <div class="modal-overlay" id="modal-capitan">
   <div class="modal">
@@ -801,7 +789,7 @@ function renderCancha(){
         if(j){
           const pts=j.pts_fecha!==undefined?j.pts_fecha:'—';
           const pCls=pts>0?'s-pts-p':pts<0?'s-pts-n':'s-pts-0';
-          return `<div class="slot ${activo?'selected':''}" style="position:relative;" onclick="activarSlot('${key}')">
+          return `<div class="slot ${activo?'selected':''}" style="position:relative;">
             ${esCap?'<div class="s-crown">👑</div>':''}
             <div class="s-cam"><div class="s-cam-bg"><div class="s-cam-half" style="background:${j.clubes?.color1||'#555'}"></div><div class="s-cam-half" style="background:${j.clubes?.color2||'#777'}"></div></div><span class="s-cam-ini">${j.nombre.split(' ').pop().charAt(0)}</span></div>
             <div class="s-name">${j.nombre.split(' ').slice(-1)[0]}</div>
@@ -821,7 +809,7 @@ function renderCancha(){
   const sr=document.getElementById('sups-row');if(!sr) return;
   sr.innerHTML=['ARQ','DEF','MED','DEL'].map(pos=>{
     const key=`sup-${pos}`,j=plantel[key],activo=slotActivo===key;
-    return `<div class="sup-slot ${activo?'selected':''}" onclick="activarSlot('${key}')" style="flex:1;position:relative;">
+    return `<div class="sup-slot ${activo?'selected':''}" ${!j?`onclick="activarSlot('${key}')"`:''}  style="flex:1;position:relative;">
       ${j?`<div class="sup-cam">${makeCam(j,20)}</div>`:`<div class="sup-cam sup-vacio"></div>`}
       <div class="sup-info">
         <div class="sup-nombre">${j?j.nombre.split(' ').slice(-1)[0]:'—'}</div>
