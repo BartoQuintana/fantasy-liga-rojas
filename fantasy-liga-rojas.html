@@ -739,16 +739,25 @@ async function cargarMiEquipo(){
 function gastado(){return Object.values(plantel).reduce((s,j)=>s+(j?.valor||0),0);}
 function totalJug(){return Object.values(plantel).filter(Boolean).length;}
 
+function plantelCompleto(){
+  if(!plantel['ARQ-0']||!plantel['sup-ARQ']||!plantel['sup-DEF']||!plantel['sup-MED']||!plantel['sup-DEL']) return false;
+  for(let i=0;i<formacion.def;i++) if(!plantel[`DEF-${i}`]) return false;
+  for(let i=0;i<formacion.med;i++) if(!plantel[`MED-${i}`]) return false;
+  for(let i=0;i<formacion.del;i++) if(!plantel[`DEL-${i}`]) return false;
+  return true;
+}
+
 function actualizarPresup(){
   const g=gastado(),r=PRESUPUESTO-g,pct=Math.min(100,(g/PRESUPUESTO)*100);
+  const completo=plantelCompleto();
   const ed=document.getElementById('e-disp');if(ed) ed.textContent=`$${r.toFixed(1)}M`;
   const ec=document.getElementById('e-count');if(ec) ec.textContent=`${totalJug()}/15`;
   const fill=document.getElementById('e-fill');
   if(fill){fill.style.width=pct+'%';fill.className=`presup-fill${pct>90?' danger':pct>70?' warn':''}`;}
-  const btn=document.getElementById('btn-confirm');if(btn) btn.disabled=totalJug()<15;
-  const btnMob=document.getElementById('btn-confirm-mob');if(btnMob) btnMob.disabled=totalJug()<15;
+  const btn=document.getElementById('btn-confirm');if(btn) btn.disabled=!completo;
+  const btnMob=document.getElementById('btn-confirm-mob');if(btnMob) btnMob.disabled=!completo;
   const btnAgregar=document.getElementById('mob-abrir-btn');
-  if(btnAgregar) btnAgregar.style.display=totalJug()>=15?'none':'block';
+  if(btnAgregar) btnAgregar.style.display=completo?'none':'block';
 }
 
 function actualizarAvisoCambio(){
@@ -1014,9 +1023,8 @@ async function ejecutarCambio(){
 
 // ── CONFIRMAR EQUIPO ──────────────────────────────────────
 async function confirmarEquipo(){
-  // Verificar 15 jugadores completos
-  const total=totalJug();
-  if(total<15){
+  if(!plantelCompleto()){
+    const total=totalJug();
     const faltantes=[];
     if(!plantel['ARQ-0']) faltantes.push('ARQ titular');
     if(!plantel['sup-ARQ']) faltantes.push('ARQ suplente');
@@ -1026,7 +1034,7 @@ async function confirmarEquipo(){
     if(!plantel['sup-MED']) faltantes.push('MED suplente');
     for(let i=0;i<formacion.del;i++) if(!plantel[`DEL-${i}`]) faltantes.push(`DEL ${i+1}`);
     if(!plantel['sup-DEL']) faltantes.push('DEL suplente');
-    alert(`Te faltan ${15-total} jugador(es):\n${faltantes.slice(0,5).join(', ')}`);
+    alert(`Completá el plantel antes de confirmar.\nFaltan: ${faltantes.slice(0,5).join(', ')}`);
     return;
   }
   const btn=document.getElementById('btn-confirm');
