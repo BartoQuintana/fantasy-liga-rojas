@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Liga Rojas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --verde:#16a34a;--verde-d:#14532d;--verde-l:#dcfce7;
+  --rojo:#dc2626;--rojo-l:#fee2e2;
+  --amarillo:#fbbf24;--amarillo-l:#fef3c7;
+  --gris-bg:#f8f7f4;--gris-borde:#e5e3dc;
+  --txt:#1a1a1a;--txt-m:#6b6b6b;--txt-s:#9a9a9a;
+  --blanco:#ffffff;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt);min-height:100vh;}
+
+/* LOGIN */
+#login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:#111;position:fixed;inset:0;z-index:100;
+  transition:opacity .4s;
+}
+#login-screen.hidden{opacity:0;pointer-events:none;}
+.login-box{background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:40px 32px;width:340px;text-align:center;}
+.login-titulo{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:1px;margin-bottom:4px;}
+.login-sub{font-size:13px;color:#888;margin-bottom:28px;}
+.login-stripes{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:24px;}
+.login-stripes div{flex:1;}
+.inp{width:100%;padding:11px 14px;border:1px solid #333;border-radius:9px;background:#111;color:#fff;font-size:14px;font-family:'DM Sans',sans-serif;margin-bottom:10px;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:#16a34a;}
+.inp::placeholder{color:#555;}
+.btn-login{width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.btn-login:hover{background:#15803d;}
+.login-switch{font-size:12px;color:#888;margin-top:14px;cursor:pointer;}
+.login-switch span{color:#16a34a;font-weight:600;}
+.login-error{font-size:12px;color:#f87171;margin-bottom:10px;display:none;}
+
+/* APP */
+#app{max-width:480px;margin:0 auto;padding:12px 12px 80px;}
+
+/* HEADER */
+.hdr{background:#111;border-radius:14px;padding:0;margin-bottom:12px;overflow:hidden;position:relative;}
+.hdr-stripes{position:absolute;top:0;right:0;bottom:0;width:100px;display:flex;}
+.stripe{flex:1;}
+.hdr-inner{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;}
+.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;letter-spacing:1px;line-height:1;}
+.hdr-sub{font-size:11px;color:#888;margin-top:2px;}
+.hdr-right{text-align:right;}
+.fecha-pill{background:#16a34a;color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:.5px;display:inline-block;margin-bottom:4px;}
+.logout-btn{font-size:10px;color:#666;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.logout-btn:hover{color:#aaa;}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gris-borde);display:flex;z-index:50;}
+.nav-item{flex:1;padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;transition:color .15s;}
+.nav-icon{font-size:20px;display:block;margin-bottom:2px;}
+.nav-label{font-size:10px;font-weight:500;color:var(--txt-m);}
+.nav-item.active .nav-label{color:var(--verde);font-weight:600;}
+
+/* SECTIONS */
+.section{display:none;}.section.active{display:block;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--gris-borde);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.card-tit{font-size:10px;font-weight:600;color:var(--txt-m);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.stat{background:#fff;border:1px solid var(--gris-borde);border-radius:12px;padding:12px;text-align:center;}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;}
+.stat-l{font-size:10px;color:var(--txt-m);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* CANCHA */
+.cancha{background:#15803d;border-radius:10px;padding:10px 8px;position:relative;overflow:hidden;}
+.cancha::after{content:'';position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,.15);}
+.linea-titulo{font-family:'Bebas Neue',sans-serif;font-size:10px;color:rgba(255,255,255,.45);letter-spacing:2px;text-align:center;margin:2px 0 5px;}
+.linea{display:flex;justify-content:center;gap:5px;margin-bottom:5px;}
+.jugador-btn{background:none;border:none;cursor:pointer;text-align:center;width:70px;transition:transform .15s;padding:0;}
+.jugador-btn:hover{transform:scale(1.05);}
+.jugador-btn.selected .camisa{box-shadow:0 0 0 3px #facc15;}
+.camisa{width:36px;height:36px;border-radius:50%;margin:0 auto 3px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.camisa-bg{position:absolute;inset:0;display:flex;}
+.camisa-half{flex:1;}
+.camisa-ini{position:relative;font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.j-nombre{font-size:8px;color:#fff;font-weight:600;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+.j-pts{font-size:9px;font-weight:600;padding:1px 5px;border-radius:5px;margin-top:2px;display:inline-block;}
+.pts-pos{background:rgba(74,222,128,.25);color:#bbf7d0;}
+.pts-neg{background:rgba(239,68,68,.25);color:#fca5a5;}
+.pts-neu{background:rgba(255,255,255,.15);color:#d1d5db;}
+
+/* SUPLENTES */
+.sups{margin-top:10px;border-top:1px solid var(--gris-borde);padding-top:10px;}
+.sups-tit{font-size:10px;font-weight:600;color:var(--txt-m);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
+.sup-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.sup-card{background:var(--gris-bg);border:1px solid var(--gris-borde);border-radius:10px;padding:7px 4px;text-align:center;}
+.sup-camisa{width:28px;height:28px;border-radius:50%;margin:0 auto 3px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.sup-nombre{font-size:8px;font-weight:500;color:var(--txt);line-height:1.2;}
+.sup-info{font-size:7.5px;color:var(--txt-m);margin-top:1px;}
+.sup-pts{font-size:8px;font-weight:600;color:var(--verde);margin-top:1px;}
+
+/* AVISO */
+.aviso{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;font-size:12px;margin-bottom:12px;font-weight:500;}
+.aviso-ok{background:var(--verde-l);color:var(--verde-d);}
+.aviso-warn{background:var(--amarillo-l);color:#92400e;}
+
+/* MERCADO */
+.filtros{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.filtro-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--gris-borde);background:#fff;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--txt-m);transition:all .15s;}
+.filtro-btn.active{background:#111;color:#fff;border-color:#111;}
+.m-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gris-borde);cursor:pointer;transition:background .1s;border-radius:8px;}
+.m-row:last-child{border-bottom:none;}
+.m-row:hover{background:var(--gris-bg);padding:10px 8px;margin:0 -8px;}
+.m-camisa{width:34px;height:34px;border-radius:50%;flex-shrink:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.m-nombre{font-size:13px;font-weight:600;color:var(--txt);}
+.m-detalle{font-size:11px;color:var(--txt-m);}
+.m-pts{font-size:12px;font-weight:600;color:var(--txt-m);}
+.m-valor{background:#fef9ee;color:#92400e;border:1px solid #fde68a;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.pos-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:4px;text-transform:uppercase;}
+.pos-arq{background:#dbeafe;color:#1e40af;}
+.pos-def{background:#dcfce7;color:#166534;}
+.pos-med{background:#fef9c3;color:#854d0e;}
+.pos-del{background:#fee2e2;color:#991b1b;}
+
+/* TABLA */
+.tabla-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gris-borde);}
+.tabla-row:last-child{border-bottom:none;}
+.t-pos{width:22px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--txt-m);}
+.t-pos.gold{color:#ca8a04;}.t-pos.silver{color:#64748b;}.t-pos.bronze{color:#92400e;}
+.t-name{flex:1;font-size:13px;font-weight:600;}
+.t-pts{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--verde);}
+.yo-badge{font-size:10px;background:var(--verde-l);color:var(--verde-d);padding:2px 7px;border-radius:10px;font-weight:600;}
+
+/* ADMIN */
+.admin-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--gris-borde);}
+.admin-row:last-child{border-bottom:none;}
+.pts-inp{width:60px;padding:5px 8px;border:1px solid var(--gris-borde);border-radius:8px;font-size:14px;text-align:center;font-family:'DM Sans',sans-serif;background:#fff;color:var(--txt);}
+
+/* BTNS */
+.btn{padding:8px 16px;border-radius:9px;border:1px solid var(--gris-borde);background:#fff;color:var(--txt);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn:hover{background:var(--gris-bg);}
+.btn-g{background:#16a34a;color:#fff;border-color:#16a34a;}
+.btn-g:hover{background:#15803d;}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--txt-m);font-size:13px;}
+.spinner{width:24px;height:24px;border:2px solid var(--gris-borde);border-top-color:var(--verde);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:480px;}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+.modal p{font-size:13px;color:var(--txt-m);margin-bottom:16px;}
+.modal-btns{display:flex;gap:8px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-stripes">
+      <div style="background:#1d4ed8"></div>
+      <div style="background:#dc2626"></div>
+      <div style="background:#fbbf24"></div>
+      <div style="background:#111"></div>
+      <div style="background:#60a5fa"></div>
+    </div>
+    <div class="login-titulo">Fantasy Liga Rojas</div>
+    <div class="login-sub" id="login-sub">Ingresá para armar tu equipo</div>
+    <div class="login-error" id="login-error"></div>
+    <input class="inp" type="text" id="inp-nombre" placeholder="Tu nombre" style="display:none;">
+    <input class="inp" type="email" id="inp-email" placeholder="Email">
+    <input class="inp" type="password" id="inp-pass" placeholder="Contraseña">
+    <button class="btn-login" id="btn-auth" onclick="handleAuth()">Entrar</button>
+    <div class="login-switch" id="login-switch" onclick="toggleMode()">¿No tenés cuenta? <span>Registrate</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <div class="hdr">
+    <div class="hdr-stripes">
+      <div class="stripe" style="background:#1d4ed8;opacity:.7"></div>
+      <div class="stripe" style="background:#dc2626;opacity:.7"></div>
+      <div class="stripe" style="background:#fbbf24;opacity:.7"></div>
+    </div>
+    <div class="hdr-inner">
+      <div>
+        <div class="hdr-title">Fantasy Liga Rojas</div>
+        <div class="hdr-sub" id="hdr-usuario">Cargando...</div>
+      </div>
+      <div class="hdr-right">
+        <div class="fecha-pill" id="hdr-fecha">Fecha —</div>
+        <button class="logout-btn" onclick="logout()">Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MI EQUIPO -->
+  <div id="sec-equipo" class="section active">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" style="color:var(--verde)" id="mis-pts">—</div><div class="stat-l">Mis puntos</div></div>
+      <div class="stat"><div class="stat-n" style="color:#ca8a04" id="mi-valor">—</div><div class="stat-l">Valor</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--rojo)" id="mi-pos">—</div><div class="stat-l">Posición</div></div>
+    </div>
+    <div id="aviso-cambio" class="aviso aviso-ok">✓ Tenés 1 cambio gratuito esta fecha</div>
+    <div class="card">
+      <div class="card-tit">Mi formación</div>
+      <div class="cancha">
+        <div class="linea-titulo">DEL</div>
+        <div class="linea" id="linea-del"></div>
+        <div class="linea-titulo">MED</div>
+        <div class="linea" id="linea-med"></div>
+        <div class="linea-titulo">DEF</div>
+        <div class="linea" id="linea-def"></div>
+        <div class="linea-titulo">ARQ</div>
+        <div class="linea" id="linea-arq"></div>
+      </div>
+      <div class="sups">
+        <div class="sups-tit">Suplentes</div>
+        <div class="sup-row" id="linea-sup"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="cancelarCambio()">Cancelar</button>
+        <button class="btn btn-g" onclick="confirmarCambio()">Confirmar cambio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MERCADO -->
+  <div id="sec-mercado" class="section">
+    <div class="card">
+      <div class="card-tit">Mercado de jugadores</div>
+      <div class="filtros">
+        <button class="filtro-btn active" onclick="filtrarMercado('todos',this)">Todos</button>
+        <button class="filtro-btn" onclick="filtrarMercado('ARQ',this)">ARQ</button>
+        <button class="filtro-btn" onclick="filtrarMercado('DEF',this)">DEF</button>
+        <button class="filtro-btn" onclick="filtrarMercado('MED',this)">MED</button>
+        <button class="filtro-btn" onclick="filtrarMercado('DEL',this)">DEL</button>
+      </div>
+      <div id="lista-mercado"><div class="loading"><div class="spinner"></div>Cargando jugadores...</div></div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div id="sec-tabla" class="section">
+    <div class="card">
+      <div class="card-tit">Posiciones generales</div>
+      <div id="lista-tabla"><div class="loading"><div class="spinner"></div>Cargando tabla...</div></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="sec-admin" class="section">
+    <div class="card">
+      <div class="card-tit">⚙ Cargar puntos — Admin</div>
+      <p style="font-size:12px;color:var(--txt-m);margin-bottom:12px;">Solo el organizador puede ver esta sección.</p>
+      <div id="admin-lista"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="guardarPuntos(this)">Guardar puntos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-item active" onclick="showTab('equipo',this)">
+      <span class="nav-icon">⚽</span>
+      <span class="nav-label">Mi equipo</span>
+    </button>
+    <button class="nav-item" onclick="showTab('mercado',this)">
+      <span class="nav-icon">🔄</span>
+      <span class="nav-label">Mercado</span>
+    </button>
+    <button class="nav-item" onclick="showTab('tabla',this)">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Tabla</span>
+    </button>
+    <button class="nav-item" onclick="showTab('admin',this)" id="nav-admin" style="display:none;">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Admin</span>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL FICHAR -->
+<div class="modal-overlay" id="modal-fichar">
+  <div class="modal">
+    <h3 id="modal-titulo">Fichar jugador</h3>
+    <p id="modal-desc">¿Confirmás el fichaje?</p>
+    <div class="modal-btns">
+      <button class="btn" style="flex:1" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-g" style="flex:1" onclick="ficharJugador()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://hpptjowqzjwexzatwgyo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_IPA-bB3gTx1GYY5k0eInug_3h7x7bta';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// EMAIL ADMIN (cambialo por el tuyo)
+const ADMIN_EMAIL = 'bartoquintana@gmail.com';
+
+// ── ESTADO ────────────────────────────────────────────────
+let usuarioActual = null;
+let equipoActual = null;
+let titulares = [];
+let suplentes = [];
+let todosJugadores = [];
+let clubes = {};
+let fechaActual = null;
+let seleccionado = null;
+let cambiosUsados = 0;
+let jugadorFichar = null;
+let mercadoFiltro = 'todos';
+
+// ── AUTH ──────────────────────────────────────────────────
+let modoRegistro = false;
+
+function toggleMode() {
+  modoRegistro = !modoRegistro;
+  document.getElementById('inp-nombre').style.display = modoRegistro ? 'block' : 'none';
+  document.getElementById('btn-auth').textContent = modoRegistro ? 'Registrarse' : 'Entrar';
+  document.getElementById('login-sub').textContent = modoRegistro ? 'Creá tu cuenta gratis' : 'Ingresá para armar tu equipo';
+  document.getElementById('login-switch').innerHTML = modoRegistro
+    ? '¿Ya tenés cuenta? <span>Iniciá sesión</span>'
+    : '¿No tenés cuenta? <span>Registrate</span>';
+}
+
+function showError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('inp-email').value.trim();
+  const pass = document.getElementById('inp-pass').value;
+  const nombre = document.getElementById('inp-nombre').value.trim();
+  document.getElementById('login-error').style.display = 'none';
+
+  if (!email || !pass) { showError('Completá email y contraseña'); return; }
+
+  if (modoRegistro) {
+    if (!nombre) { showError('Ingresá tu nombre'); return; }
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
+    if (error) { showError(error.message); return; }
+    // Crear usuario en tabla
+    await sb.from('usuarios').insert({ id: data.user.id, nombre, email, pagado: false });
+    iniciarApp(data.user, nombre);
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) { showError('Email o contraseña incorrectos'); return; }
+    const { data: usr } = await sb.from('usuarios').select('nombre').eq('id', data.user.id).single();
+    iniciarApp(data.user, usr?.nombre || email);
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ── INICIO APP ────────────────────────────────────────────
+async function iniciarApp(user, nombre) {
+  usuarioActual = { ...user, nombre };
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('hdr-usuario').textContent = nombre;
+
+  // Admin?
+  if (user.email === ADMIN_EMAIL) {
+    document.getElementById('nav-admin').style.display = 'flex';
+  }
+
+  await cargarDatos();
+}
+
+async function cargarDatos() {
+  // Clubes
+  const { data: cls } = await sb.from('clubes').select('*');
+  if (cls) cls.forEach(c => clubes[c.id] = c);
+
+  // Fecha actual
+  const { data: fechas } = await sb.from('fechas').select('*').eq('cerrada', false).order('numero').limit(1);
+  if (fechas && fechas.length > 0) {
+    fechaActual = fechas[0];
+    document.getElementById('hdr-fecha').textContent = `Fecha ${fechaActual.numero}`;
+  }
+
+  // Todos los jugadores
+  const { data: jgs } = await sb.from('jugadores').select('*, clubes(nombre,color1,color2)');
+  if (jgs) todosJugadores = jgs;
+
+  await cargarMiEquipo();
+  await cargarTabla();
+  renderMercado();
+  renderAdmin();
+}
+
+// ── MI EQUIPO ─────────────────────────────────────────────
+async function cargarMiEquipo() {
+  const { data: equipo } = await sb.from('equipos')
+    .select('*').eq('usuario_id', usuarioActual.id).single();
+
+  if (!equipo) {
+    // Sin equipo aún — mostrar mensaje
+    document.getElementById('linea-del').innerHTML = '<div style="color:rgba(255,255,255,.5);font-size:12px;text-align:center;padding:10px;">Mercado → elegí tus jugadores</div>';
+    return;
+  }
+
+  equipoActual = equipo;
+
+  const { data: ej } = await sb.from('equipo_jugadores')
+    .select('*, jugadores(*, clubes(nombre,color1,color2))').eq('equipo_id', equipo.id);
+
+  if (!ej) return;
+
+  titulares = ej.filter(e => e.es_titular).map(e => e.jugadores);
+  suplentes = ej.filter(e => !e.es_titular).map(e => e.jugadores);
+
+  // Puntos de fecha actual
+  if (fechaActual) {
+    const ids = ej.map(e => e.jugador_id);
+    const { data: pts } = await sb.from('puntos')
+      .select('jugador_id,puntos').eq('fecha_id', fechaActual.id).in('jugador_id', ids);
+    if (pts) {
+      const ptsMap = {};
+      pts.forEach(p => ptsMap[p.jugador_id] = p.puntos);
+      titulares.forEach(j => j.pts_fecha = ptsMap[j.id] || 0);
+      suplentes.forEach(j => j.pts_fecha = ptsMap[j.id] || 0);
+    }
+  }
+
+  const totalPts = titulares.reduce((s, j) => s + (j.pts_fecha || 0), 0);
+  const totalVal = [...titulares, ...suplentes].reduce((s, j) => s + parseFloat(j.valor || 0), 0);
+  document.getElementById('mis-pts').textContent = totalPts;
+  document.getElementById('mi-valor').textContent = `$${totalVal.toFixed(1)}M`;
+
+  // Cambios usados esta fecha
+  if (fechaActual) {
+    const { data: cambios } = await sb.from('cambios')
+      .select('id').eq('equipo_id', equipo.id).eq('fecha_id', fechaActual.id);
+    cambiosUsados = cambios ? cambios.length : 0;
+    actualizarAvisoCambio();
+  }
+
+  renderCancha();
+}
+
+function actualizarAvisoCambio() {
+  const av = document.getElementById('aviso-cambio');
+  if (cambiosUsados === 0) {
+    av.className = 'aviso aviso-ok';
+    av.textContent = '✓ Tenés 1 cambio gratuito esta fecha';
+  } else {
+    av.className = 'aviso aviso-warn';
+    av.textContent = `⚠ Cambio gratuito usado. Cambios extra: $200 c/u`;
+  }
+}
+
+// ── CANCHA ────────────────────────────────────────────────
+function makeCamisa(j, size=36) {
+  const c1 = j.clubes?.color1 || '#555';
+  const c2 = j.clubes?.color2 || '#777';
+  const ini = j.nombre.split(' ').pop().charAt(0);
+  return `<div class="camisa" style="width:${size}px;height:${size}px;">
+    <div class="camisa-bg"><div class="camisa-half" style="background:${c1}"></div><div class="camisa-half" style="background:${c2}"></div></div>
+    <span class="camisa-ini" style="font-size:${size*0.35}px;">${ini}</span>
+  </div>`;
+}
+
+function posBadge(pos) {
+  return `<span class="pos-badge pos-${pos.toLowerCase()}">${pos}</span>`;
+}
+
+function ptsClass(p) {
+  if (!p && p!==0) return 'pts-neu';
+  if (p > 0) return 'pts-pos';
+  if (p < 0) return 'pts-neg';
+  return 'pts-neu';
+}
+
+function renderCancha() {
+  ['DEL','MED','DEF','ARQ'].forEach(pos => {
+    const linea = document.getElementById('linea-' + pos.toLowerCase());
+    const jgs = titulares.filter(j => j.posicion === pos);
+    if (jgs.length === 0) {
+      linea.innerHTML = `<div style="color:rgba(255,255,255,.4);font-size:10px;">Sin jugadores</div>`;
+      return;
+    }
+    linea.innerHTML = jgs.map(j => {
+      const pts = j.pts_fecha !== undefined ? j.pts_fecha : '—';
+      const sel = seleccionado && seleccionado.id === j.id;
+      return `<button class="jugador-btn ${sel?'selected':''}" onclick="seleccionarTitular(${j.id})">
+        ${makeCamisa(j, 36)}
+        <div class="j-nombre">${j.nombre.split(' ').slice(-1)[0]}</div>
+        <div class="j-pts ${ptsClass(j.pts_fecha)}">${pts > 0 ? '+' : ''}${pts}P</div>
+      </button>`;
+    }).join('');
+  });
+
+  const supRow = document.getElementById('linea-sup');
+  supRow.innerHTML = suplentes.map(s => {
+    const pts = s.pts_fecha !== undefined ? s.pts_fecha : '—';
+    return `<div class="sup-card">
+      ${makeCamisa(s, 28)}
+      <div class="sup-nombre">${s.nombre.split(' ').slice(-1)[0]}</div>
+      <div class="sup-info">${posBadge(s.posicion)}</div>
+      <div class="sup-pts">${pts}P</div>
+    </div>`;
+  }).join('');
+}
+
+function seleccionarTitular(id) {
+  const j = titulares.find(x => x.id === id);
+  seleccionado = seleccionado?.id === id ? null : j;
+  renderCancha();
+}
+
+function cancelarCambio() {
+  seleccionado = null;
+  renderCancha();
+}
+
+async function confirmarCambio() {
+  if (!seleccionado) { alert('Seleccioná un jugador para cambiar'); return; }
+  if (cambiosUsados >= 1) {
+    if (!confirm('Ya usaste tu cambio gratuito. Este cambio tiene costo adicional ($200). ¿Confirmás?')) return;
+  }
+  // Registrar cambio en DB (simplificado — sale el seleccionado, sin reemplazo aún)
+  if (fechaActual && equipoActual) {
+    await sb.from('cambios').insert({
+      equipo_id: equipoActual.id,
+      fecha_id: fechaActual.id,
+      jugador_sale: seleccionado.id,
+      jugador_entra: seleccionado.id,
+      es_pago: cambiosUsados >= 1
+    });
+    cambiosUsados++;
+  }
+  seleccionado = null;
+  actualizarAvisoCambio();
+  renderCancha();
+}
+
+// ── MERCADO ───────────────────────────────────────────────
+function renderMercado() {
+  const filtro = mercadoFiltro;
+  let jgs = todosJugadores;
+  if (filtro !== 'todos') jgs = jgs.filter(j => j.posicion === filtro);
+
+  // Excluir los que ya están en mi equipo
+  const misIds = new Set([...titulares, ...suplentes].map(j => j.id));
+  jgs = jgs.filter(j => !misIds.has(j.id));
+
+  document.getElementById('lista-mercado').innerHTML = jgs.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--txt-m);font-size:13px;">No hay jugadores disponibles</div>'
+    : jgs.map(j => `
+      <div class="m-row" onclick="abrirModalFichar(${j.id})">
+        ${makeCamisa(j, 34)}
+        <div style="flex:1">
+          <div class="m-nombre">${posBadge(j.posicion)}${j.nombre}</div>
+          <div class="m-detalle">${j.clubes?.nombre || ''}</div>
+        </div>
+        <span class="m-pts" style="margin-right:6px">—P</span>
+        <span class="m-valor">$${parseFloat(j.valor).toFixed(1)}M</span>
+      </div>`).join('');
+}
+
+function filtrarMercado(pos, btn) {
+  mercadoFiltro = pos;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMercado();
+}
+
+function abrirModalFichar(id) {
+  jugadorFichar = todosJugadores.find(j => j.id === id);
+  if (!jugadorFichar) return;
+  document.getElementById('modal-titulo').textContent = `Fichar a ${jugadorFichar.nombre}`;
+  document.getElementById('modal-desc').textContent =
+    `${jugadorFichar.posicion} · ${jugadorFichar.clubes?.nombre} · $${parseFloat(jugadorFichar.valor).toFixed(1)}M. ¿Confirmás el fichaje?`;
+  document.getElementById('modal-fichar').classList.add('open');
+}
+
+function cerrarModal() {
+  document.getElementById('modal-fichar').classList.remove('open');
+  jugadorFichar = null;
+}
+
+async function ficharJugador() {
+  if (!jugadorFichar || !equipoActual) { cerrarModal(); return; }
+  await sb.from('equipo_jugadores').insert({
+    equipo_id: equipoActual.id,
+    jugador_id: jugadorFichar.id,
+    es_titular: titulares.length < 11
+  });
+  cerrarModal();
+  await cargarMiEquipo();
+  renderMercado();
+}
+
+// ── TABLA ─────────────────────────────────────────────────
+async function cargarTabla() {
+  const { data: equipos } = await sb.from('equipos').select('id,nombre,usuario_id');
+  if (!equipos) return;
+
+  // Sumar puntos de todos los equipos
+  const posClases = ['gold','silver','bronze'];
+  const rows = await Promise.all(equipos.map(async eq => {
+    const { data: ej } = await sb.from('equipo_jugadores')
+      .select('jugador_id').eq('equipo_id', eq.id).eq('es_titular', true);
+    if (!ej || !fechaActual) return { nombre: eq.nombre, pts: 0, me: eq.usuario_id === usuarioActual?.id };
+    const ids = ej.map(e => e.jugador_id);
+    const { data: pts } = await sb.from('puntos')
+      .select('puntos').eq('fecha_id', fechaActual.id).in('jugador_id', ids);
+    const total = pts ? pts.reduce((s,p) => s + p.puntos, 0) : 0;
+    return { nombre: eq.nombre, pts: total, me: eq.usuario_id === usuarioActual?.id };
+  }));
+
+  rows.sort((a,b) => b.pts - a.pts);
+
+  // Mi posición
+  const miPos = rows.findIndex(r => r.me) + 1;
+  if (miPos > 0) document.getElementById('mi-pos').textContent = `${miPos}°`;
+
+  document.getElementById('lista-tabla').innerHTML = rows.map((r,i) => `
+    <div class="tabla-row">
+      <div class="t-pos ${posClases[i]||''}">${i+1}</div>
+      <div class="t-name">${r.nombre} ${r.me ? '<span class="yo-badge">Yo</span>' : ''}</div>
+      <div class="t-pts">${r.pts}</div>
+    </div>`).join('');
+}
+
+// ── ADMIN ─────────────────────────────────────────────────
+function renderAdmin() {
+  if (!usuarioActual || usuarioActual.email !== ADMIN_EMAIL) {
+    document.getElementById('admin-lista').innerHTML =
+      '<div style="text-align:center;padding:20px;color:var(--txt-m);font-size:13px;">Solo para el organizador</div>';
+    return;
+  }
+  document.getElementById('admin-lista').innerHTML = todosJugadores.map(j => `
+    <div class="admin-row">
+      ${makeCamisa(j, 28)}
+      <div style="flex:1;font-size:12px;font-weight:500;">${j.nombre}
+        <span style="color:var(--txt-m);font-weight:400;"> ${j.posicion} · ${j.clubes?.nombre||''}</span>
+      </div>
+      <input class="pts-inp" type="number" value="0" id="adm-${j.id}" placeholder="Pts">
+    </div>`).join('');
+}
+
+async function guardarPuntos(btn) {
+  if (!fechaActual) { alert('No hay fecha activa'); return; }
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+
+  const inserts = todosJugadores.map(j => ({
+    jugador_id: j.id,
+    fecha_id: fechaActual.id,
+    puntos: parseInt(document.getElementById(`adm-${j.id}`)?.value || 0)
+  }));
+
+  await sb.from('puntos').upsert(inserts, { onConflict: 'jugador_id,fecha_id' });
+
+  btn.textContent = '✓ Guardado';
+  setTimeout(() => { btn.textContent = 'Guardar puntos'; btn.disabled = false; }, 2000);
+  await cargarMiEquipo();
+  await cargarTabla();
+}
+
+// ── NAVEGACIÓN ────────────────────────────────────────────
+function showTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── INIT ──────────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const { data: usr } = await sb.from('usuarios').select('nombre').eq('id', session.user.id).single();
+    iniciarApp(session.user, usr?.nombre || session.user.email);
+  }
+})();
+</script>
+</body>
+</html>
