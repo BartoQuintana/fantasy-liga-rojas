@@ -834,6 +834,8 @@ function renderCancha(){
 
 function activarSlot(key){
   if(enVeda) return;
+  // Solo activar slots vacíos
+  if(plantel[key]) return;
   slotActivo=slotActivo===key?null:key;
   renderCancha();
   actualizarAviso();
@@ -842,7 +844,6 @@ function activarSlot(key){
     document.querySelectorAll('.pfiltro').forEach(b=>{b.classList.toggle('active',b.textContent===pos);});
     pFiltro=pos;
     renderLista();
-    // En mobile abrir la lista automáticamente
     if(esMobile()) abrirMobLista();
   }
 }
@@ -925,18 +926,8 @@ async function fichar(id){
   if(!slotActivo||enVeda) return;
   const j=todosJugadores.find(x=>x.id===id);if(!j) return;
   if(parseFloat(j.valor)>PRESUPUESTO-gastado()){alert('Sin presupuesto suficiente');return;}
-
-  // Si hay jugador en el slot → cambio
-  if(plantel[slotActivo]&&equipoActual&&!esPrimeraFecha){
-    const sale=plantel[slotActivo];
-    pendienteCambio={sale,entra:j,slot:slotActivo};
-    document.getElementById('mc-titulo').textContent=cambiosUsados>=1?'⚠ Cambio con costo':'Confirmar cambio';
-    document.getElementById('mc-desc').textContent=`Sale: ${sale.nombre}\nEntra: ${j.nombre}${cambiosUsados>=1?`\n\nCosto: $${COSTO_EXTRA.toLocaleString()}`:''}`; 
-    document.getElementById('modal-cambio').classList.add('open');
-    return;
-  }
-
-  // Solo guardar en memoria, no en DB hasta confirmar
+  // Solo fichar si el slot está vacío
+  if(plantel[slotActivo]) return;
   plantel[slotActivo]=j;
   slotActivo=null;
   renderCancha();actualizarPresup();renderLista();actualizarAviso();actualizarBtnCap();renderPuntaje();
@@ -1134,6 +1125,11 @@ function actualizarMobile(){
   const mob=esMobile();
   const panel=document.getElementById('mob-btn-wrap');
   if(panel) panel.style.display=mob?'block':'none';
+  // Actualizar visibilidad botón agregar
+  const btnAgregar=document.getElementById('mob-abrir-btn');
+  if(btnAgregar) btnAgregar.style.display=totalJug()>=15?'none':'block';
+  const btnMob=document.getElementById('btn-confirm-mob');
+  if(btnMob) btnMob.disabled=totalJug()<15;
 }
 
 function abrirMobLista(){
