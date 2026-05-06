@@ -52,16 +52,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .logout-btn{font-size:10px;color:var(--txt-s);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
 
 /* NAV */
-.nav{position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid var(--borde);display:flex;z-index:50;}
-.nav-item{flex:1;padding:8px 2px 6px;text-align:center;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-top:2px solid transparent;transition:all .15s;}
-.nav-item.active{border-top-color:var(--verde);}
+.nav{position:sticky;top:41px;background:#000;border-bottom:1px solid var(--borde);display:flex;z-index:49;}
+.nav-item{flex:1;padding:8px 2px 6px;text-align:center;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;}
+.nav-item.active{border-bottom-color:var(--verde);}
 .nav-icon{font-size:15px;display:block;margin-bottom:1px;}
 .nav-label{font-size:9px;font-weight:500;color:var(--txt-m);}
 .nav-item.active .nav-label{color:var(--verde);font-weight:600;}
 
+@media(max-width:600px){
+  .nav{position:fixed;bottom:0;top:auto;border-bottom:none;border-top:1px solid var(--borde);}
+  .nav-item{border-bottom:none;border-top:2px solid transparent;}
+  .nav-item.active{border-top-color:var(--verde);border-bottom:none;}
+}
+
 /* SECTIONS */
 .section{display:none;min-height:calc(100vh - 120px);}
 .section.active{display:block;}
+#sec-editar.active{display:flex;flex-direction:column;}
 
 /* ── INICIO ── */
 .inicio-hero{background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);padding:32px 20px 24px;text-align:center;border-bottom:1px solid var(--borde);}
@@ -660,8 +667,9 @@ async function cargarDatos(){
   if(todasFechas && todasFechas.length>0){
     const abierta=todasFechas.find(f=>!f.cerrada);
     fechaActual=abierta||todasFechas[todasFechas.length-1];
-    esPrimeraFecha=abierta?.numero===1&&todasFechas.filter(f=>f.cerrada).length===0;
+    esPrimeraFecha=!!abierta&&abierta.numero===1&&todasFechas.filter(f=>f.cerrada).length===0;
     enVeda=!abierta;
+    console.log('Fecha actual:', fechaActual?.numero, '| esPrimera:', esPrimeraFecha, '| enVeda:', enVeda);
     const pill=document.getElementById('hdr-pill');
     if(enVeda){
       pill.className='veda-pill';
