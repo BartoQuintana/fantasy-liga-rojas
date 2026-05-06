@@ -315,11 +315,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
     <div class="login-titulo">Fantasy Liga Rojas</div>
     <div class="login-sub" id="login-sub">Ingresá para armar tu equipo</div>
     <div class="login-error" id="login-error"></div>
-    <input class="inp" type="text" id="inp-nombre" placeholder="Tu nombre" style="display:none;">
-    <input class="inp" type="email" id="inp-email" placeholder="Email">
-    <input class="inp" type="password" id="inp-pass" placeholder="Contraseña">
-    <button class="btn-login" onclick="handleAuth()">Entrar</button>
-    <div class="login-switch" onclick="toggleMode()">¿No tenés cuenta? <span>Registrate</span></div>
+
+    <!-- REGISTRO -->
+    <div id="form-registro" style="display:none;">
+      <input class="inp" type="text" id="inp-nombre" placeholder="Tu nombre (ej: Barto Quintana)">
+      <input class="inp" type="text" id="inp-club" placeholder="Nombre de tu club (ej: Barto's FC)">
+      <input class="inp" type="email" id="inp-email-reg" placeholder="Email">
+      <input class="inp" type="password" id="inp-pass-reg" placeholder="Contraseña (mín. 6 caracteres)">
+      <button class="btn-login" onclick="handleRegistro()">Crear cuenta</button>
+      <div class="login-switch" onclick="setModo('login')">¿Ya tenés cuenta? <span>Iniciá sesión</span></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <input class="inp" type="email" id="inp-email" placeholder="Email">
+      <input class="inp" type="password" id="inp-pass" placeholder="Contraseña">
+      <button class="btn-login" onclick="handleLogin()">Entrar</button>
+      <div style="text-align:center;margin-top:10px;">
+        <div class="login-switch" onclick="setModo('registro')">¿No tenés cuenta? <span>Registrate</span></div>
+        <div class="login-switch" style="margin-top:6px;" onclick="setModo('recuperar')">¿Olvidaste tu contraseña? <span>Recuperar</span></div>
+      </div>
+    </div>
+
+    <!-- RECUPERAR -->
+    <div id="form-recuperar" style="display:none;">
+      <input class="inp" type="email" id="inp-email-rec" placeholder="Tu email">
+      <button class="btn-login" onclick="handleRecuperar()">Enviar link de recuperación</button>
+      <div class="login-switch" style="margin-top:10px;" onclick="setModo('login')">← Volver al inicio de sesión</div>
+    </div>
   </div>
 </div>
 
@@ -612,39 +635,67 @@ let pendienteCambio=null,capSeleccionado=null;
 let modoRegistro=false;
 
 // ── AUTH ──────────────────────────────────────────────────
-function toggleMode(){
-  modoRegistro=!modoRegistro;
-  document.getElementById('inp-nombre').style.display=modoRegistro?'block':'none';
-  document.querySelector('.btn-login').textContent=modoRegistro?'Registrarse':'Entrar';
-  document.getElementById('login-sub').textContent=modoRegistro?'Creá tu cuenta gratis':'Ingresá para armar tu equipo';
-  document.querySelector('.login-switch').innerHTML=modoRegistro?'¿Ya tenés cuenta? <span>Iniciá sesión</span>':'¿No tenés cuenta? <span>Registrate</span>';
+function setModo(modo){
+  document.getElementById('form-login').style.display='none';
+  document.getElementById('form-registro').style.display='none';
+  document.getElementById('form-recuperar').style.display='none';
+  document.getElementById('login-error').style.display='none';
+  const subs={
+    login:'Ingresá para armar tu equipo',
+    registro:'Creá tu cuenta gratis',
+    recuperar:'Te enviamos un link a tu email'
+  };
+  document.getElementById('login-sub').textContent=subs[modo];
+  document.getElementById('form-'+modo).style.display='block';
 }
+
 function showErr(m){const e=document.getElementById('login-error');e.textContent=m;e.style.display='block';}
 
-async function handleAuth(){
+async function handleLogin(){
   const email=document.getElementById('inp-email').value.trim();
   const pass=document.getElementById('inp-pass').value;
-  const nombre=document.getElementById('inp-nombre').value.trim();
   document.getElementById('login-error').style.display='none';
   if(!email||!pass){showErr('Completá email y contraseña');return;}
-  if(modoRegistro){
-    if(!nombre){showErr('Ingresá tu nombre');return;}
-    const{data,error}=await sb.auth.signUp({email,password:pass});
-    if(error){showErr(error.message);return;}
-    await sb.from('usuarios').insert({id:data.user.id,nombre,email,pagado:false});
-    iniciarApp(data.user,nombre);
-  } else {
-    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-    if(error){showErr('Email o contraseña incorrectos');return;}
-    const{data:usr}=await sb.from('usuarios').select('nombre').eq('id',data.user.id).single();
-    iniciarApp(data.user,usr?.nombre||email);
-  }
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){showErr('Email o contraseña incorrectos');return;}
+  const{data:usr}=await sb.from('usuarios').select('nombre,nombre_club').eq('id',data.user.id).single();
+  iniciarApp(data.user,usr?.nombre||email,usr?.nombre_club||'Mi equipo');
 }
+
+async function handleRegistro(){
+  const nombre=document.getElementById('inp-nombre').value.trim();
+  const club=document.getElementById('inp-club').value.trim();
+  const email=document.getElementById('inp-email-reg').value.trim();
+  const pass=document.getElementById('inp-pass-reg').value;
+  document.getElementById('login-error').style.display='none';
+  if(!nombre){showErr('Ingresá tu nombre');return;}
+  if(!club){showErr('Ingresá el nombre de tu club');return;}
+  if(!email){showErr('Ingresá tu email');return;}
+  if(pass.length<6){showErr('La contraseña debe tener al menos 6 caracteres');return;}
+  const{data,error}=await sb.auth.signUp({email,password:pass});
+  if(error){showErr(error.message);return;}
+  await sb.from('usuarios').insert({id:data.user.id,nombre,nombre_club:club,email,pagado:false});
+  iniciarApp(data.user,nombre,club);
+}
+
+async function handleRecuperar(){
+  const email=document.getElementById('inp-email-rec').value.trim();
+  document.getElementById('login-error').style.display='none';
+  if(!email){showErr('Ingresá tu email');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo:'https://fantasy-liga-rojas.vercel.app'
+  });
+  if(error){showErr(error.message);return;}
+  document.getElementById('login-error').style.display='block';
+  document.getElementById('login-error').style.color='#86efac';
+  document.getElementById('login-error').textContent='✓ Te enviamos el link. Revisá tu email.';
+}
+
 async function logout(){await sb.auth.signOut();location.reload();}
 
 // ── INICIO APP ────────────────────────────────────────────
-async function iniciarApp(user,nombre){
-  usuarioActual={...user,nombre};
+async function iniciarApp(user,nombre,nombreClub){
+  usuarioActual={...user,nombre,nombreClub:nombreClub||'Mi equipo FC'};
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').style.display='block';
   document.getElementById('hdr-user').textContent=nombre;
@@ -1054,7 +1105,7 @@ async function confirmarEquipo(){
     if(!equipoActual){
       const{data:eq,error:eqErr}=await sb.from('equipos').insert({
         usuario_id:usuarioActual.id,
-        nombre:usuarioActual.nombre+' FC',
+        nombre:usuarioActual.nombreClub||usuarioActual.nombre+' FC',
         presupuesto:PRESUPUESTO,
         formacion:formacion.id
       }).select().single();
@@ -1120,8 +1171,7 @@ function cerrarModalCap(){document.getElementById('modal-capitan').classList.rem
 
 // ── TABLA ─────────────────────────────────────────────────
 async function cargarTabla(){
-  // Traer todos los usuarios
-  const{data:usuarios}=await sb.from('usuarios').select('id,nombre,email');
+  const{data:usuarios}=await sb.from('usuarios').select('id,nombre,nombre_club');
   const{data:equipos}=await sb.from('equipos').select('id,nombre,usuario_id,capitan_id');
   if(!usuarios) return;
 
@@ -1130,18 +1180,19 @@ async function cargarTabla(){
   const rows=await Promise.all(usuarios.map(async u=>{
     const eq=equipos?.find(e=>e.usuario_id===u.id);
     const me=u.id===usuarioActual?.id;
-    const nombreEquipo=eq?.nombre||u.nombre+' (sin equipo)';
+    const nombreMostrar=u.nombre||u.email||'—';
+    const nombreClub=u.nombre_club||eq?.nombre||'—';
     const sinEquipo=!eq;
 
-    if(!eq||!fechaActual) return{nombre:nombreEquipo,pts:0,me,sinEquipo};
+    if(!eq||!fechaActual) return{nombre:nombreMostrar,club:nombreClub,pts:0,me,sinEquipo};
 
     const{data:ej}=await sb.from('equipo_jugadores').select('jugador_id').eq('equipo_id',eq.id).eq('es_titular',true);
-    if(!ej||!ej.length) return{nombre:nombreEquipo,pts:0,me,sinEquipo:false};
+    if(!ej||!ej.length) return{nombre:nombreMostrar,club:nombreClub,pts:0,me,sinEquipo:false};
 
     const ids=ej.map(e=>e.jugador_id);
     const{data:pts}=await sb.from('puntos').select('jugador_id,puntos').eq('fecha_id',fechaActual.id).in('jugador_id',ids);
     const total=pts?pts.reduce((s,p)=>s+(p.puntos*(eq.capitan_id===p.jugador_id?2:1)),0):0;
-    return{nombre:nombreEquipo,pts:total,me,sinEquipo:false};
+    return{nombre:nombreMostrar,club:nombreClub,pts:total,me,sinEquipo:false};
   }));
 
   rows.sort((a,b)=>b.pts-a.pts);
@@ -1153,9 +1204,8 @@ async function cargarTabla(){
     <div class="tabla-row">
       <div class="t-pos ${pc[i]||''}">${i+1}</div>
       <div class="t-name">
-        ${r.nombre} 
-        ${r.me?'<span class="yo-badge">Yo</span>':''}
-        ${r.sinEquipo?'<span style="font-size:9px;color:var(--txt-s);margin-left:4px;">sin equipo</span>':''}
+        <div style="font-weight:600;">${r.club}</div>
+        <div style="font-size:10px;color:var(--txt-m);">${r.nombre} ${r.me?'<span class="yo-badge">Yo</span>':''} ${r.sinEquipo?'<span style="color:var(--txt-s);">· sin equipo</span>':''}</div>
       </div>
       <div class="t-pts" style="${r.sinEquipo?'color:var(--txt-s);':''}">${r.pts}</div>
     </div>`).join('');
@@ -1342,8 +1392,10 @@ function showTab(tab,btn){
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
   if(session){
-    const{data:usr}=await sb.from('usuarios').select('nombre').eq('id',session.user.id).single();
-    iniciarApp(session.user,usr?.nombre||session.user.email);
+    const{data:usr}=await sb.from('usuarios').select('nombre,nombre_club').eq('id',session.user.id).single();
+    iniciarApp(session.user,usr?.nombre||session.user.email,usr?.nombre_club||'Mi equipo FC');
+  } else {
+    setModo('login');
   }
 })();
 </script>
