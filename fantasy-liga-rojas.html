@@ -660,8 +660,8 @@ async function cargarDatos(){
   if(todasFechas && todasFechas.length>0){
     const abierta=todasFechas.find(f=>!f.cerrada);
     fechaActual=abierta||todasFechas[todasFechas.length-1];
-    esPrimeraFecha=todasFechas[0].numero===1&&!todasFechas[0].cerrada&&todasFechas.length===1;
-    enVeda=!abierta; // veda si no hay fecha abierta
+    esPrimeraFecha=abierta?.numero===1&&todasFechas.filter(f=>f.cerrada).length===0;
+    enVeda=!abierta;
     const pill=document.getElementById('hdr-pill');
     if(enVeda){
       pill.className='veda-pill';
@@ -763,15 +763,16 @@ function actualizarPresup(){
 function actualizarAvisoCambio(){
   const av=document.getElementById('e-aviso');if(!av) return;
   if(enVeda){av.style.display='flex';av.className='aviso-c aviso-veda';av.textContent='🔒 VEDA ACTIVA';return;}
-  if(esPrimeraFecha){av.style.display='none';return;}
   av.style.display='flex';
+  if(esPrimeraFecha){av.className='aviso-c aviso-ok';av.textContent='✓ Cambios ilimitados hasta la Fecha 2';return;}
   av.className=`aviso-c ${cambiosUsados===0?'aviso-ok':'aviso-warn'}`;
   av.textContent=cambiosUsados===0?'✓ 1 cambio gratis':`⚠ Extra: $${COSTO_EXTRA.toLocaleString()}`;
 }
 
 function actualizarBtnCap(){
   const btn=document.getElementById('btn-cap');if(!btn) return;
-  btn.style.display=totalJug()>=11?'block':'none';
+  const tits=Object.entries(plantel).filter(([k,v])=>!k.startsWith('sup-')&&v).length;
+  btn.style.display=tits>=11?'block':'none';
   btn.textContent=capitan?'👑 Capitán':'👑 Elegir capitán';
 }
 
