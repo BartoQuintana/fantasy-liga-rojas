@@ -1120,27 +1120,44 @@ function cerrarModalCap(){document.getElementById('modal-capitan').classList.rem
 
 // ── TABLA ─────────────────────────────────────────────────
 async function cargarTabla(){
+  // Traer todos los usuarios
+  const{data:usuarios}=await sb.from('usuarios').select('id,nombre,email');
   const{data:equipos}=await sb.from('equipos').select('id,nombre,usuario_id,capitan_id');
-  if(!equipos) return;
-  document.getElementById('tot-eq').textContent=equipos.length;
-  const rows=await Promise.all(equipos.map(async eq=>{
+  if(!usuarios) return;
+
+  document.getElementById('tot-eq').textContent=usuarios.length;
+
+  const rows=await Promise.all(usuarios.map(async u=>{
+    const eq=equipos?.find(e=>e.usuario_id===u.id);
+    const me=u.id===usuarioActual?.id;
+    const nombreEquipo=eq?.nombre||u.nombre+' (sin equipo)';
+    const sinEquipo=!eq;
+
+    if(!eq||!fechaActual) return{nombre:nombreEquipo,pts:0,me,sinEquipo};
+
     const{data:ej}=await sb.from('equipo_jugadores').select('jugador_id').eq('equipo_id',eq.id).eq('es_titular',true);
-    if(!ej||!fechaActual) return{nombre:eq.nombre,pts:0,me:eq.usuario_id===usuarioActual?.id};
+    if(!ej||!ej.length) return{nombre:nombreEquipo,pts:0,me,sinEquipo:false};
+
     const ids=ej.map(e=>e.jugador_id);
-    if(!ids.length) return{nombre:eq.nombre,pts:0,me:eq.usuario_id===usuarioActual?.id};
     const{data:pts}=await sb.from('puntos').select('jugador_id,puntos').eq('fecha_id',fechaActual.id).in('jugador_id',ids);
     const total=pts?pts.reduce((s,p)=>s+(p.puntos*(eq.capitan_id===p.jugador_id?2:1)),0):0;
-    return{nombre:eq.nombre,pts:total,me:eq.usuario_id===usuarioActual?.id};
+    return{nombre:nombreEquipo,pts:total,me,sinEquipo:false};
   }));
+
   rows.sort((a,b)=>b.pts-a.pts);
   const miPos=rows.findIndex(r=>r.me)+1;
   if(miPos>0){document.getElementById('mi-pos').textContent=`${miPos}°`;document.getElementById('pts-pos').textContent=`${miPos}°`;}
+
   const pc=['gold','silver','bronze'];
   document.getElementById('lista-tabla').innerHTML=rows.map((r,i)=>`
     <div class="tabla-row">
       <div class="t-pos ${pc[i]||''}">${i+1}</div>
-      <div class="t-name">${r.nombre} ${r.me?'<span class="yo-badge">Yo</span>':''}</div>
-      <div class="t-pts">${r.pts}</div>
+      <div class="t-name">
+        ${r.nombre} 
+        ${r.me?'<span class="yo-badge">Yo</span>':''}
+        ${r.sinEquipo?'<span style="font-size:9px;color:var(--txt-s);margin-left:4px;">sin equipo</span>':''}
+      </div>
+      <div class="t-pts" style="${r.sinEquipo?'color:var(--txt-s);':''}">${r.pts}</div>
     </div>`).join('');
 }
 
