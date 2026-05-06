@@ -716,6 +716,9 @@ function actualizarPresup(){
   const fill=document.getElementById('e-fill');
   if(fill){fill.style.width=pct+'%';fill.className=`presup-fill${pct>90?' danger':pct>70?' warn':''}`;}
   const btn=document.getElementById('btn-confirm');if(btn) btn.disabled=totalJug()<15;
+  const btnMob=document.getElementById('btn-confirm-mob');if(btnMob) btnMob.disabled=totalJug()<15;
+  const btnAgregar=document.getElementById('mob-abrir-btn');
+  if(btnAgregar) btnAgregar.style.display=totalJug()>=15?'none':'block';
 }
 
 function actualizarAvisoCambio(){
