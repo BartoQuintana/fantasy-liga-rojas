@@ -212,7 +212,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
   .sups-bar{padding:4px 5px;}
   .sup-slot{padding:3px 4px;}
 }
-.panel-filtros{display:flex;gap:2px;padding:6px 6px;border-bottom:1px solid var(--borde);flex-wrap:wrap;}
+.panel-extras{display:flex;gap:4px;padding:5px 6px;border-bottom:1px solid var(--borde);}
+.mob-extras{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--borde);background:var(--bg2);}
+.sel-control{flex:1;padding:4px 4px;background:var(--bg3);border:1px solid var(--borde);border-radius:7px;color:#fff;font-size:9px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;min-width:0;}
+.mob-extras .sel-control{font-size:12px;padding:6px 8px;border-radius:8px;}
 .pfiltro{padding:3px 6px;border-radius:20px;border:1px solid var(--borde);background:transparent;font-size:9px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--txt-m);transition:all .12s;}
 .pfiltro:hover{color:#fff;}
 .pfiltro.active{background:#fff;color:#000;border-color:#fff;}
@@ -422,6 +425,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
             <button class="pfiltro" onclick="setPF('MED',this)">MED</button>
             <button class="pfiltro" onclick="setPF('DEL',this)">DEL</button>
           </div>
+          <div class="panel-extras">
+            <select id="orden-sel" onchange="renderLista()" class="sel-control">
+              <option value="val-desc">$ Mayor</option>
+              <option value="val-asc">$ Menor</option>
+              <option value="az">A-Z</option>
+            </select>
+            <select id="club-sel" onchange="renderLista()" class="sel-control">
+              <option value="todos">Club</option>
+            </select>
+            <select id="precio-sel" onchange="renderLista()" class="sel-control">
+              <option value="todos">Precio</option>
+              <option value="4">-$5M</option>
+              <option value="5">$5-6M</option>
+              <option value="6">$6-7M</option>
+              <option value="7">$7-8M</option>
+              <option value="8">$8-9M</option>
+              <option value="9">+$9M</option>
+            </select>
+          </div>
           <div class="panel-search"><input type="text" id="buscar" placeholder="Buscar..." oninput="renderLista()"></div>
           <div class="panel-aviso" id="panel-aviso">Tocá un slot</div>
           <div class="jg-lista" id="jg-lista"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
@@ -450,6 +472,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
       <button class="pfiltro" onclick="setPF('DEF',this);renderMobLista()">DEF</button>
       <button class="pfiltro" onclick="setPF('MED',this);renderMobLista()">MED</button>
       <button class="pfiltro" onclick="setPF('DEL',this);renderMobLista()">DEL</button>
+    </div>
+    <div class="mob-extras">
+      <select id="mob-orden" onchange="renderMobLista()" class="sel-control">
+        <option value="val-desc">$ Mayor</option>
+        <option value="val-asc">$ Menor</option>
+        <option value="az">A-Z</option>
+      </select>
+      <select id="mob-club" onchange="renderMobLista()" class="sel-control">
+        <option value="todos">Club</option>
+      </select>
+      <select id="mob-precio" onchange="renderMobLista()" class="sel-control">
+        <option value="todos">Precio</option>
+        <option value="4">-$5M</option>
+        <option value="5">$5-6M</option>
+        <option value="6">$6-7M</option>
+        <option value="7">$7-8M</option>
+        <option value="8">$8-9M</option>
+        <option value="9">+$9M</option>
+      </select>
     </div>
     <div class="mob-search"><input type="text" id="mob-buscar" placeholder="Buscar jugador..." oninput="renderMobLista()"></div>
     <div class="mob-aviso" id="mob-aviso">Tocá un jugador para ficharlo</div>
@@ -612,6 +653,7 @@ async function cargarDatos(){
   // Jugadores
   const{data:jgs}=await sb.from('jugadores').select('*,clubes(id,nombre,color1,color2)');
   if(jgs) todosJugadores=jgs;
+  poblarClubes();
 
   // Fechas
   const{data:todasFechas}=await sb.from('fechas').select('*').order('numero');
@@ -882,8 +924,37 @@ function setPF(f,btn){
   renderLista();
 }
 
+function aplicarFiltrosOrden(jgs, prefijo=''){
+  const orden=document.getElementById(`${prefijo}orden-sel`||'orden-sel')?.value||'val-desc';
+  const clubFiltro=document.getElementById(`${prefijo}club-sel`||'club-sel')?.value||'todos';
+  const precioFiltro=document.getElementById(`${prefijo}precio-sel`||'precio-sel')?.value||'todos';
+  const busq=(document.getElementById(prefijo?`${prefijo}buscar`:'buscar')?.value||'').toLowerCase();
+
+  if(clubFiltro!=='todos') jgs=jgs.filter(j=>j.clubes?.nombre===clubFiltro);
+  if(precioFiltro!=='todos'){
+    const min=parseInt(precioFiltro),max=min+1;
+    jgs=jgs.filter(j=>parseFloat(j.valor)>=min&&parseFloat(j.valor)<max);
+  }
+  if(busq) jgs=jgs.filter(j=>j.nombre.toLowerCase().includes(busq)||(j.clubes?.nombre||'').toLowerCase().includes(busq));
+
+  if(orden==='val-desc') jgs.sort((a,b)=>parseFloat(b.valor)-parseFloat(a.valor));
+  else if(orden==='val-asc') jgs.sort((a,b)=>parseFloat(a.valor)-parseFloat(b.valor));
+  else if(orden==='az') jgs.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  return jgs;
+}
+
+function poblarClubes(){
+  const nombres=[...new Set(todosJugadores.map(j=>j.clubes?.nombre).filter(Boolean))].sort();
+  ['club-sel','mob-club'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    const actual=sel.value;
+    sel.innerHTML='<option value="todos">Club</option>'+nombres.map(n=>`<option value="${n}">${n}</option>`).join('');
+    sel.value=actual;
+  });
+}
+
 function renderLista(){
-  const busq=document.getElementById('buscar')?.value.toLowerCase()||'';
   const enPlantel=new Set(Object.values(plantel).filter(Boolean).map(j=>j.id));
   const g=gastado();
   const clubCount={};
@@ -893,11 +964,10 @@ function renderLista(){
   let jgs=todosJugadores.filter(j=>!enPlantel.has(j.id));
   if(posSlot) jgs=jgs.filter(j=>j.posicion===posSlot);
   else if(pFiltro!=='todos') jgs=jgs.filter(j=>j.posicion===pFiltro);
-  if(busq) jgs=jgs.filter(j=>j.nombre.toLowerCase().includes(busq)||(j.clubes?.nombre||'').toLowerCase().includes(busq));
-  jgs.sort((a,b)=>parseFloat(b.valor)-parseFloat(a.valor));
+  jgs=aplicarFiltrosOrden(jgs,'');
   const puede=j=>parseFloat(j.valor)<=(PRESUPUESTO-g)&&(clubCount[j.clubes?.id]||0)<MAX_CLUB;
   const lista=document.getElementById('jg-lista');if(!lista) return;
-  if(jgs.length===0){lista.innerHTML=`<div style="text-align:center;padding:16px;color:#555;font-size:11px;">Sin jugadores disponibles</div>`;return;}
+  if(jgs.length===0){lista.innerHTML=`<div style="text-align:center;padding:16px;color:#555;font-size:11px;">Sin jugadores</div>`;return;}
   lista.innerHTML=jgs.map(j=>`
     <div class="jg-row ${!puede(j)||enVeda?'no-puede':''}" onclick="${puede(j)&&slotActivo&&!enVeda?`fichar(${j.id})`:''}">
       ${makeCam(j,24)}
@@ -1137,7 +1207,6 @@ function cerrarMobLista(){
 }
 
 function renderMobLista(){
-  const busq=document.getElementById('mob-buscar')?.value.toLowerCase()||'';
   const enPlantel=new Set(Object.values(plantel).filter(Boolean).map(j=>j.id));
   const g=gastado();
   const clubCount={};
@@ -1147,16 +1216,24 @@ function renderMobLista(){
   let jgs=todosJugadores.filter(j=>!enPlantel.has(j.id));
   if(posSlot) jgs=jgs.filter(j=>j.posicion===posSlot);
   else if(pFiltro!=='todos') jgs=jgs.filter(j=>j.posicion===pFiltro);
+
+  // Aplicar filtros mobile
+  const orden=document.getElementById('mob-orden')?.value||'val-desc';
+  const clubF=document.getElementById('mob-club')?.value||'todos';
+  const precioF=document.getElementById('mob-precio')?.value||'todos';
+  const busq=document.getElementById('mob-buscar')?.value.toLowerCase()||'';
+  if(clubF!=='todos') jgs=jgs.filter(j=>j.clubes?.nombre===clubF);
+  if(precioF!=='todos'){const min=parseInt(precioF);jgs=jgs.filter(j=>parseFloat(j.valor)>=min&&parseFloat(j.valor)<min+1);}
   if(busq) jgs=jgs.filter(j=>j.nombre.toLowerCase().includes(busq)||(j.clubes?.nombre||'').toLowerCase().includes(busq));
-  jgs.sort((a,b)=>parseFloat(b.valor)-parseFloat(a.valor));
+  if(orden==='val-desc') jgs.sort((a,b)=>parseFloat(b.valor)-parseFloat(a.valor));
+  else if(orden==='val-asc') jgs.sort((a,b)=>parseFloat(a.valor)-parseFloat(b.valor));
+  else if(orden==='az') jgs.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
   const puede=j=>parseFloat(j.valor)<=(PRESUPUESTO-g)&&(clubCount[j.clubes?.id]||0)<MAX_CLUB;
-
-  // Aviso
   const av=document.getElementById('mob-aviso');
-  if(av) av.textContent=slotActivo?`Fichando en posición ${posSlot}`:'Tocá un slot en la cancha primero';
-
+  if(av) av.textContent=slotActivo?`Fichando posición ${posSlot}`:'Tocá un slot en la cancha primero';
   const lista=document.getElementById('mob-jg-lista');if(!lista) return;
-  if(jgs.length===0){lista.innerHTML=`<div style="text-align:center;padding:30px;color:#555;font-size:13px;">Sin jugadores disponibles</div>`;return;}
+  if(jgs.length===0){lista.innerHTML=`<div style="text-align:center;padding:30px;color:#555;font-size:13px;">Sin jugadores</div>`;return;}
   lista.innerHTML=jgs.map(j=>`
     <div class="mob-jg-row ${!puede(j)||enVeda?'no-puede':''}" onclick="${puede(j)&&!enVeda?`mobFichar(${j.id})`:''}">
       ${makeCam(j,32)}
