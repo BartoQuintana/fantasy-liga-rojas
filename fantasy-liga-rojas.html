@@ -12,18 +12,14 @@
   --verde:#16a34a;--verde-d:#14532d;--verde-l:#dcfce7;
   --rojo:#dc2626;--rojo-l:#fee2e2;
   --amarillo:#fbbf24;--amarillo-l:#fef3c7;
+  --azul:#2563eb;--azul-l:#dbeafe;
   --gris-bg:#f8f7f4;--gris-borde:#e5e3dc;
   --txt:#1a1a1a;--txt-m:#6b6b6b;--txt-s:#9a9a9a;
-  --blanco:#ffffff;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt);min-height:100vh;}
 
 /* LOGIN */
-#login-screen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:#111;position:fixed;inset:0;z-index:100;
-  transition:opacity .4s;
-}
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111;position:fixed;inset:0;z-index:100;transition:opacity .4s;}
 #login-screen.hidden{opacity:0;pointer-events:none;}
 .login-box{background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:40px 32px;width:340px;text-align:center;}
 .login-titulo{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:1px;margin-bottom:4px;}
@@ -52,12 +48,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 .hdr-right{text-align:right;}
 .fecha-pill{background:#16a34a;color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:.5px;display:inline-block;margin-bottom:4px;}
 .logout-btn{font-size:10px;color:#666;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
-.logout-btn:hover{color:#aaa;}
 
 /* NAV */
-.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gris-borde);display:flex;z-index:50;}
-.nav-item{flex:1;padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;transition:color .15s;}
-.nav-icon{font-size:20px;display:block;margin-bottom:2px;}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gris-borde);display:flex;z-index:50;max-width:480px;margin:0 auto;}
+.nav{left:50%;transform:translateX(-50%);width:100%;max-width:480px;}
+.nav-item{flex:1;padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.nav-icon{font-size:18px;display:block;margin-bottom:2px;}
 .nav-label{font-size:10px;font-weight:500;color:var(--txt-m);}
 .nav-item.active .nav-label{color:var(--verde);font-weight:600;}
 
@@ -71,18 +67,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
 .stat{background:#fff;border:1px solid var(--gris-borde);border-radius:12px;padding:12px;text-align:center;}
-.stat-n{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.5px;}
 .stat-l{font-size:10px;color:var(--txt-m);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
 
+/* FORMACIONES */
+.form-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
+.form-btn{padding:8px 4px;text-align:center;border:1px solid var(--gris-borde);border-radius:10px;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.form-btn:hover{border-color:#16a34a;}
+.form-btn.active{border:2px solid #16a34a;background:var(--verde-l);}
+.form-btn-num{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--txt);}
+.form-btn-label{font-size:9px;color:var(--txt-m);}
+
 /* CANCHA */
-.cancha{background:#15803d;border-radius:10px;padding:10px 8px;position:relative;overflow:hidden;}
+.cancha{background:#15803d;border-radius:10px;padding:10px 8px;position:relative;overflow:hidden;margin-bottom:10px;}
 .cancha::after{content:'';position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,.15);}
 .linea-titulo{font-family:'Bebas Neue',sans-serif;font-size:10px;color:rgba(255,255,255,.45);letter-spacing:2px;text-align:center;margin:2px 0 5px;}
-.linea{display:flex;justify-content:center;gap:5px;margin-bottom:5px;}
-.jugador-btn{background:none;border:none;cursor:pointer;text-align:center;width:70px;transition:transform .15s;padding:0;}
-.jugador-btn:hover{transform:scale(1.05);}
-.jugador-btn.selected .camisa{box-shadow:0 0 0 3px #facc15;}
-.camisa{width:36px;height:36px;border-radius:50%;margin:0 auto 3px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.linea{display:flex;justify-content:center;gap:5px;margin-bottom:5px;flex-wrap:wrap;}
+.jugador-slot{width:68px;text-align:center;cursor:pointer;}
+.jugador-slot.vacio .camisa{background:rgba(255,255,255,.1);border:2px dashed rgba(255,255,255,.3);}
+.jugador-slot.selected .camisa{box-shadow:0 0 0 3px #facc15;}
+.camisa{width:36px;height:36px;border-radius:50%;margin:0 auto 3px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.jugador-slot:hover .camisa{transform:scale(1.05);}
 .camisa-bg{position:absolute;inset:0;display:flex;}
 .camisa-half{flex:1;}
 .camisa-ini{position:relative;font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
@@ -91,12 +96,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 .pts-pos{background:rgba(74,222,128,.25);color:#bbf7d0;}
 .pts-neg{background:rgba(239,68,68,.25);color:#fca5a5;}
 .pts-neu{background:rgba(255,255,255,.15);color:#d1d5db;}
+.j-vacio{font-size:8px;color:rgba(255,255,255,.4);margin-top:4px;}
 
 /* SUPLENTES */
-.sups{margin-top:10px;border-top:1px solid var(--gris-borde);padding-top:10px;}
+.sups{border-top:1px solid var(--gris-borde);padding-top:10px;margin-top:4px;}
 .sups-tit{font-size:10px;font-weight:600;color:var(--txt-m);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
 .sup-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-.sup-card{background:var(--gris-bg);border:1px solid var(--gris-borde);border-radius:10px;padding:7px 4px;text-align:center;}
+.sup-card{background:var(--gris-bg);border:1px solid var(--gris-borde);border-radius:10px;padding:7px 4px;text-align:center;cursor:pointer;transition:border-color .15s;}
+.sup-card:hover{border-color:var(--verde);}
+.sup-card.selected{border:2px solid #facc15;}
 .sup-camisa{width:28px;height:28px;border-radius:50%;margin:0 auto 3px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .sup-nombre{font-size:8px;font-weight:500;color:var(--txt);line-height:1.2;}
 .sup-info{font-size:7.5px;color:var(--txt-m);margin-top:1px;}
@@ -106,18 +114,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 .aviso{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;font-size:12px;margin-bottom:12px;font-weight:500;}
 .aviso-ok{background:var(--verde-l);color:var(--verde-d);}
 .aviso-warn{background:var(--amarillo-l);color:#92400e;}
+.aviso-info{background:var(--azul-l);color:#1e40af;}
+
+/* PRESUPUESTO */
+.presup-bar{background:var(--gris-bg);border:1px solid var(--gris-borde);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.presup-label{font-size:11px;color:var(--txt-m);margin-bottom:6px;display:flex;justify-content:space-between;}
+.presup-track{background:#e5e7eb;border-radius:4px;height:6px;overflow:hidden;}
+.presup-fill{background:var(--verde);height:100%;border-radius:4px;transition:width .3s;}
+.presup-fill.warn{background:var(--amarillo);}
+.presup-fill.danger{background:var(--rojo);}
 
 /* MERCADO */
 .filtros{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
 .filtro-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--gris-borde);background:#fff;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--txt-m);transition:all .15s;}
 .filtro-btn.active{background:#111;color:#fff;border-color:#111;}
-.m-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gris-borde);cursor:pointer;transition:background .1s;border-radius:8px;}
+.m-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gris-borde);cursor:pointer;border-radius:8px;transition:background .1s;}
 .m-row:last-child{border-bottom:none;}
 .m-row:hover{background:var(--gris-bg);padding:10px 8px;margin:0 -8px;}
-.m-camisa{width:34px;height:34px;border-radius:50%;flex-shrink:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.m-row.no-comprable{opacity:.5;cursor:not-allowed;}
 .m-nombre{font-size:13px;font-weight:600;color:var(--txt);}
 .m-detalle{font-size:11px;color:var(--txt-m);}
-.m-pts{font-size:12px;font-weight:600;color:var(--txt-m);}
 .m-valor{background:#fef9ee;color:#92400e;border:1px solid #fde68a;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
 .pos-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:4px;text-transform:uppercase;}
 .pos-arq{background:#dbeafe;color:#1e40af;}
@@ -144,12 +160,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 .btn:hover{background:var(--gris-bg);}
 .btn-g{background:#16a34a;color:#fff;border-color:#16a34a;}
 .btn-g:hover{background:#15803d;}
+.btn-r{background:var(--rojo-l);color:var(--rojo);border-color:var(--rojo);}
 .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
-
-/* LOADING */
-.loading{text-align:center;padding:40px;color:var(--txt-m);font-size:13px;}
-.spinner{width:24px;height:24px;border:2px solid var(--gris-borde);border-top-color:var(--verde);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 10px;}
-@keyframes spin{to{transform:rotate(360deg);}}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
@@ -158,6 +170,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 .modal h3{font-size:16px;font-weight:600;margin-bottom:8px;}
 .modal p{font-size:13px;color:var(--txt-m);margin-bottom:16px;}
 .modal-btns{display:flex;gap:8px;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--txt-m);font-size:13px;}
+.spinner{width:24px;height:24px;border:2px solid var(--gris-borde);border-top-color:var(--verde);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ARMAR EQUIPO */
+.armar-paso{background:#fff;border:1px solid var(--gris-borde);border-radius:14px;padding:16px;margin-bottom:12px;}
+.paso-num{font-size:10px;font-weight:600;color:var(--verde);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
+.paso-titulo{font-size:15px;font-weight:600;margin-bottom:12px;}
+.reglas-lista{font-size:12px;color:var(--txt-m);line-height:1.8;}
+.reglas-lista span{color:var(--txt);font-weight:600;}
 </style>
 </head>
 <body>
@@ -166,10 +190,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 <div id="login-screen">
   <div class="login-box">
     <div class="login-stripes">
-      <div style="background:#1d4ed8"></div>
-      <div style="background:#dc2626"></div>
-      <div style="background:#fbbf24"></div>
-      <div style="background:#111"></div>
+      <div style="background:#1d4ed8"></div><div style="background:#dc2626"></div>
+      <div style="background:#fbbf24"></div><div style="background:#111"></div>
       <div style="background:#60a5fa"></div>
     </div>
     <div class="login-titulo">Fantasy Liga Rojas</div>
@@ -178,8 +200,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
     <input class="inp" type="text" id="inp-nombre" placeholder="Tu nombre" style="display:none;">
     <input class="inp" type="email" id="inp-email" placeholder="Email">
     <input class="inp" type="password" id="inp-pass" placeholder="Contraseña">
-    <button class="btn-login" id="btn-auth" onclick="handleAuth()">Entrar</button>
-    <div class="login-switch" id="login-switch" onclick="toggleMode()">¿No tenés cuenta? <span>Registrate</span></div>
+    <button class="btn-login" onclick="handleAuth()">Entrar</button>
+    <div class="login-switch" onclick="toggleMode()">¿No tenés cuenta? <span>Registrate</span></div>
   </div>
 </div>
 
@@ -194,7 +216,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
     <div class="hdr-inner">
       <div>
         <div class="hdr-title">Fantasy Liga Rojas</div>
-        <div class="hdr-sub" id="hdr-usuario">Cargando...</div>
+        <div class="hdr-sub" id="hdr-usuario">—</div>
       </div>
       <div class="hdr-right">
         <div class="fecha-pill" id="hdr-fecha">Fecha —</div>
@@ -205,33 +227,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 
   <!-- MI EQUIPO -->
   <div id="sec-equipo" class="section active">
-    <div class="stats">
-      <div class="stat"><div class="stat-n" style="color:var(--verde)" id="mis-pts">—</div><div class="stat-l">Mis puntos</div></div>
-      <div class="stat"><div class="stat-n" style="color:#ca8a04" id="mi-valor">—</div><div class="stat-l">Valor</div></div>
-      <div class="stat"><div class="stat-n" style="color:var(--rojo)" id="mi-pos">—</div><div class="stat-l">Posición</div></div>
-    </div>
-    <div id="aviso-cambio" class="aviso aviso-ok">✓ Tenés 1 cambio gratuito esta fecha</div>
-    <div class="card">
-      <div class="card-tit">Mi formación</div>
-      <div class="cancha">
-        <div class="linea-titulo">DEL</div>
-        <div class="linea" id="linea-del"></div>
-        <div class="linea-titulo">MED</div>
-        <div class="linea" id="linea-med"></div>
-        <div class="linea-titulo">DEF</div>
-        <div class="linea" id="linea-def"></div>
-        <div class="linea-titulo">ARQ</div>
-        <div class="linea" id="linea-arq"></div>
-      </div>
-      <div class="sups">
-        <div class="sups-tit">Suplentes</div>
-        <div class="sup-row" id="linea-sup"></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn" onclick="cancelarCambio()">Cancelar</button>
-        <button class="btn btn-g" onclick="confirmarCambio()">Confirmar cambio</button>
-      </div>
-    </div>
+    <div id="equipo-content"></div>
   </div>
 
   <!-- MERCADO -->
@@ -245,7 +241,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
         <button class="filtro-btn" onclick="filtrarMercado('MED',this)">MED</button>
         <button class="filtro-btn" onclick="filtrarMercado('DEL',this)">DEL</button>
       </div>
-      <div id="lista-mercado"><div class="loading"><div class="spinner"></div>Cargando jugadores...</div></div>
+      <div id="lista-mercado"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
     </div>
   </div>
 
@@ -253,39 +249,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
   <div id="sec-tabla" class="section">
     <div class="card">
       <div class="card-tit">Posiciones generales</div>
-      <div id="lista-tabla"><div class="loading"><div class="spinner"></div>Cargando tabla...</div></div>
+      <div id="lista-tabla"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
     </div>
   </div>
 
   <!-- ADMIN -->
   <div id="sec-admin" class="section">
     <div class="card">
-      <div class="card-tit">⚙ Cargar puntos — Admin</div>
-      <p style="font-size:12px;color:var(--txt-m);margin-bottom:12px;">Solo el organizador puede ver esta sección.</p>
+      <div class="card-tit">⚙ Cargar puntos</div>
       <div id="admin-lista"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
-      <div class="btn-row">
-        <button class="btn btn-g" onclick="guardarPuntos(this)">Guardar puntos</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-g" onclick="guardarPuntos(this)">Guardar puntos</button></div>
+    </div>
+    <div class="card">
+      <div class="card-tit">Nueva fecha</div>
+      <p style="font-size:12px;color:var(--txt-m);margin-bottom:12px;">Cerrá la fecha actual y abrí la siguiente.</p>
+      <div class="btn-row"><button class="btn btn-r" onclick="nuevaFecha()">Cerrar fecha y abrir siguiente</button></div>
     </div>
   </div>
 
-  <!-- NAV -->
   <nav class="nav">
     <button class="nav-item active" onclick="showTab('equipo',this)">
-      <span class="nav-icon">⚽</span>
-      <span class="nav-label">Mi equipo</span>
+      <span class="nav-icon">⚽</span><span class="nav-label">Mi equipo</span>
     </button>
     <button class="nav-item" onclick="showTab('mercado',this)">
-      <span class="nav-icon">🔄</span>
-      <span class="nav-label">Mercado</span>
+      <span class="nav-icon">🔄</span><span class="nav-label">Mercado</span>
     </button>
     <button class="nav-item" onclick="showTab('tabla',this)">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-label">Tabla</span>
+      <span class="nav-icon">🏆</span><span class="nav-label">Tabla</span>
     </button>
-    <button class="nav-item" onclick="showTab('admin',this)" id="nav-admin" style="display:none;">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">Admin</span>
+    <button class="nav-item" id="nav-admin" style="display:none;" onclick="showTab('admin',this)">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Admin</span>
     </button>
   </nav>
 </div>
@@ -294,68 +287,88 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--txt)
 <div class="modal-overlay" id="modal-fichar">
   <div class="modal">
     <h3 id="modal-titulo">Fichar jugador</h3>
-    <p id="modal-desc">¿Confirmás el fichaje?</p>
+    <p id="modal-desc">—</p>
     <div class="modal-btns">
       <button class="btn" style="flex:1" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn btn-g" style="flex:1" onclick="ficharJugador()">Confirmar</button>
+      <button class="btn btn-g" style="flex:1" onclick="confirmarFichar()">Fichar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIO -->
+<div class="modal-overlay" id="modal-cambio">
+  <div class="modal">
+    <h3 id="modal-cambio-titulo">Confirmar cambio</h3>
+    <p id="modal-cambio-desc">—</p>
+    <div class="modal-btns">
+      <button class="btn" style="flex:1" onclick="cerrarModalCambio()">Cancelar</button>
+      <button class="btn btn-g" style="flex:1" onclick="ejecutarCambio()">Confirmar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── SUPABASE ──────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────
 const SUPABASE_URL = 'https://hpptjowqzjwexzatwgyo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_IPA-bB3gTx1GYY5k0eInug_3h7x7bta';
+const ADMIN_EMAIL  = 'bartolomeq87@gmail.com';
+const PRESUPUESTO_INICIAL = 100.0; // $100M
+const COSTO_CAMBIO_EXTRA  = 2500;  // pesos
+const MAX_MISMO_CLUB      = 6;
+
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// EMAIL ADMIN (cambialo por el tuyo)
-const ADMIN_EMAIL = ''bartolomeq87@gmail.com'';
+// ── FORMACIONES ───────────────────────────────────────────
+const FORMACIONES = [
+  { id:'4-4-2', def:4, med:4, del:2 },
+  { id:'4-3-3', def:4, med:3, del:3 },
+  { id:'4-5-1', def:4, med:5, del:1 },
+  { id:'3-4-3', def:3, med:4, del:3 },
+  { id:'3-5-2', def:3, med:5, del:2 },
+  { id:'5-3-2', def:5, med:3, del:2 },
+  { id:'5-4-1', def:5, med:4, del:1 },
+  { id:'4-2-4', def:4, med:2, del:4 },
+  { id:'3-3-4', def:3, med:3, del:4 },
+];
 
 // ── ESTADO ────────────────────────────────────────────────
-let usuarioActual = null;
-let equipoActual = null;
-let titulares = [];
-let suplentes = [];
-let todosJugadores = [];
-let clubes = {};
-let fechaActual = null;
-let seleccionado = null;
+let usuarioActual = null, equipoActual = null;
+let todosJugadores = [], clubes = {}, fechaActual = null;
+let plantel = []; // {jugador, es_titular, posicion_slot}
+let formacionActual = '4-3-3';
 let cambiosUsados = 0;
-let jugadorFichar = null;
 let mercadoFiltro = 'todos';
-
-// ── AUTH ──────────────────────────────────────────────────
+let jugadorFichar = null;
+let slotSeleccionado = null; // {pos, idx} para cambio titular
+let supSeleccionado = null;  // jugador suplente seleccionado
 let modoRegistro = false;
 
+// ── AUTH ──────────────────────────────────────────────────
 function toggleMode() {
   modoRegistro = !modoRegistro;
   document.getElementById('inp-nombre').style.display = modoRegistro ? 'block' : 'none';
-  document.getElementById('btn-auth').textContent = modoRegistro ? 'Registrarse' : 'Entrar';
+  document.querySelector('.btn-login').textContent = modoRegistro ? 'Registrarse' : 'Entrar';
   document.getElementById('login-sub').textContent = modoRegistro ? 'Creá tu cuenta gratis' : 'Ingresá para armar tu equipo';
-  document.getElementById('login-switch').innerHTML = modoRegistro
+  document.querySelector('.login-switch').innerHTML = modoRegistro
     ? '¿Ya tenés cuenta? <span>Iniciá sesión</span>'
     : '¿No tenés cuenta? <span>Registrate</span>';
 }
 
 function showError(msg) {
   const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  el.textContent = msg; el.style.display = 'block';
 }
 
 async function handleAuth() {
-  const email = document.getElementById('inp-email').value.trim();
-  const pass = document.getElementById('inp-pass').value;
+  const email  = document.getElementById('inp-email').value.trim();
+  const pass   = document.getElementById('inp-pass').value;
   const nombre = document.getElementById('inp-nombre').value.trim();
   document.getElementById('login-error').style.display = 'none';
-
   if (!email || !pass) { showError('Completá email y contraseña'); return; }
-
   if (modoRegistro) {
     if (!nombre) { showError('Ingresá tu nombre'); return; }
     const { data, error } = await sb.auth.signUp({ email, password: pass });
     if (error) { showError(error.message); return; }
-    // Crear usuario en tabla
     await sb.from('usuarios').insert({ id: data.user.id, nombre, email, pagado: false });
     iniciarApp(data.user, nombre);
   } else {
@@ -366,40 +379,29 @@ async function handleAuth() {
   }
 }
 
-async function logout() {
-  await sb.auth.signOut();
-  location.reload();
-}
+async function logout() { await sb.auth.signOut(); location.reload(); }
 
-// ── INICIO APP ────────────────────────────────────────────
+// ── INICIO ────────────────────────────────────────────────
 async function iniciarApp(user, nombre) {
   usuarioActual = { ...user, nombre };
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').style.display = 'block';
   document.getElementById('hdr-usuario').textContent = nombre;
-
-  // Admin?
-  if (user.email === ADMIN_EMAIL) {
-    document.getElementById('nav-admin').style.display = 'flex';
-  }
-
+  if (user.email === ADMIN_EMAIL) document.getElementById('nav-admin').style.display = 'flex';
   await cargarDatos();
 }
 
 async function cargarDatos() {
-  // Clubes
   const { data: cls } = await sb.from('clubes').select('*');
   if (cls) cls.forEach(c => clubes[c.id] = c);
 
-  // Fecha actual
   const { data: fechas } = await sb.from('fechas').select('*').eq('cerrada', false).order('numero').limit(1);
-  if (fechas && fechas.length > 0) {
+  if (fechas?.length > 0) {
     fechaActual = fechas[0];
     document.getElementById('hdr-fecha').textContent = `Fecha ${fechaActual.numero}`;
   }
 
-  // Todos los jugadores
-  const { data: jgs } = await sb.from('jugadores').select('*, clubes(nombre,color1,color2)');
+  const { data: jgs } = await sb.from('jugadores').select('*, clubes(id,nombre,color1,color2)');
   if (jgs) todosJugadores = jgs;
 
   await cargarMiEquipo();
@@ -414,69 +416,179 @@ async function cargarMiEquipo() {
     .select('*').eq('usuario_id', usuarioActual.id).single();
 
   if (!equipo) {
-    // Sin equipo aún — mostrar mensaje
-    document.getElementById('linea-del').innerHTML = '<div style="color:rgba(255,255,255,.5);font-size:12px;text-align:center;padding:10px;">Mercado → elegí tus jugadores</div>';
+    renderArmarEquipo();
     return;
   }
-
   equipoActual = equipo;
+  formacionActual = equipo.formacion || '4-3-3';
 
   const { data: ej } = await sb.from('equipo_jugadores')
-    .select('*, jugadores(*, clubes(nombre,color1,color2))').eq('equipo_id', equipo.id);
+    .select('*, jugadores(*, clubes(id,nombre,color1,color2))').eq('equipo_id', equipo.id);
+  plantel = ej ? ej.map(e => ({ ...e, jugador: e.jugadores })) : [];
 
-  if (!ej) return;
-
-  titulares = ej.filter(e => e.es_titular).map(e => e.jugadores);
-  suplentes = ej.filter(e => !e.es_titular).map(e => e.jugadores);
-
-  // Puntos de fecha actual
-  if (fechaActual) {
-    const ids = ej.map(e => e.jugador_id);
+  // Puntos fecha actual
+  if (fechaActual && plantel.length > 0) {
+    const ids = plantel.map(e => e.jugador_id);
     const { data: pts } = await sb.from('puntos')
       .select('jugador_id,puntos').eq('fecha_id', fechaActual.id).in('jugador_id', ids);
     if (pts) {
       const ptsMap = {};
       pts.forEach(p => ptsMap[p.jugador_id] = p.puntos);
-      titulares.forEach(j => j.pts_fecha = ptsMap[j.id] || 0);
-      suplentes.forEach(j => j.pts_fecha = ptsMap[j.id] || 0);
+      plantel.forEach(e => e.jugador.pts_fecha = ptsMap[e.jugador.id] || 0);
     }
   }
 
-  const totalPts = titulares.reduce((s, j) => s + (j.pts_fecha || 0), 0);
-  const totalVal = [...titulares, ...suplentes].reduce((s, j) => s + parseFloat(j.valor || 0), 0);
-  document.getElementById('mis-pts').textContent = totalPts;
-  document.getElementById('mi-valor').textContent = `$${totalVal.toFixed(1)}M`;
-
-  // Cambios usados esta fecha
-  if (fechaActual) {
+  // Cambios usados
+  if (fechaActual && equipoActual) {
     const { data: cambios } = await sb.from('cambios')
       .select('id').eq('equipo_id', equipo.id).eq('fecha_id', fechaActual.id);
-    cambiosUsados = cambios ? cambios.length : 0;
-    actualizarAvisoCambio();
+    cambiosUsados = cambios?.length || 0;
   }
 
-  renderCancha();
+  renderMiEquipo();
 }
 
-function actualizarAvisoCambio() {
-  const av = document.getElementById('aviso-cambio');
-  if (cambiosUsados === 0) {
-    av.className = 'aviso aviso-ok';
-    av.textContent = '✓ Tenés 1 cambio gratuito esta fecha';
-  } else {
-    av.className = 'aviso aviso-warn';
-    av.textContent = `⚠ Cambio gratuito usado. Cambios extra: $200 c/u`;
-  }
+function getTitulares() { return plantel.filter(e => e.es_titular); }
+function getSuplentes() { return plantel.filter(e => !e.es_titular); }
+
+function renderMiEquipo() {
+  const form = FORMACIONES.find(f => f.id === formacionActual) || FORMACIONES[1];
+  const titulares = getTitulares();
+  const suplentes = getSuplentes();
+  const totalPts  = titulares.reduce((s, e) => s + (e.jugador.pts_fecha || 0), 0);
+  const gastado   = plantel.reduce((s, e) => s + parseFloat(e.jugador.valor || 0), 0);
+  const restante  = PRESUPUESTO_INICIAL - gastado;
+  const pct       = Math.min(100, (gastado / PRESUPUESTO_INICIAL) * 100);
+
+  let html = `
+  <div class="stats">
+    <div class="stat"><div class="stat-n" style="color:var(--verde)">${totalPts}</div><div class="stat-l">Mis puntos</div></div>
+    <div class="stat"><div class="stat-n" style="color:#ca8a04">$${restante.toFixed(1)}M</div><div class="stat-l">Disponible</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--rojo)" id="mi-pos">—</div><div class="stat-l">Posición</div></div>
+  </div>
+
+  <div class="presup-bar">
+    <div class="presup-label">
+      <span>Presupuesto gastado</span>
+      <span>$${gastado.toFixed(1)}M / $${PRESUPUESTO_INICIAL}M</span>
+    </div>
+    <div class="presup-track">
+      <div class="presup-fill ${pct>90?'danger':pct>70?'warn':''}" style="width:${pct}%"></div>
+    </div>
+  </div>
+
+  <div id="aviso-cambio" class="aviso ${cambiosUsados===0?'aviso-ok':'aviso-warn'}">
+    ${cambiosUsados===0 ? '✓ Tenés 1 cambio gratuito esta fecha' : `⚠ Cambio gratuito usado. Extras: $${COSTO_CAMBIO_EXTRA.toLocaleString()} c/u`}
+  </div>
+
+  <div class="card">
+    <div class="card-tit">Formación</div>
+    <div class="form-selector">
+      ${FORMACIONES.map(f => `
+        <button class="form-btn ${f.id===formacionActual?'active':''}" onclick="cambiarFormacion('${f.id}')">
+          <div class="form-btn-num">${f.id}</div>
+          <div class="form-btn-label">${f.def}D·${f.med}M·${f.del}A</div>
+        </button>`).join('')}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-tit">Mi formación — tocá un jugador para cambiarlo</div>
+    <div class="cancha">`;
+
+  // Renderizar por líneas según formación
+  const lineas = [
+    { pos: 'DEL', cant: form.del },
+    { pos: 'MED', cant: form.med },
+    { pos: 'DEF', cant: form.def },
+    { pos: 'ARQ', cant: 1 },
+  ];
+
+  lineas.forEach(({ pos, cant }) => {
+    html += `<div class="linea-titulo">${pos}</div><div class="linea">`;
+    const jugPos = titulares.filter(e => e.jugador.posicion === pos).map(e => e.jugador);
+    for (let i = 0; i < cant; i++) {
+      const j = jugPos[i];
+      const selSel = slotSeleccionado && slotSeleccionado.pos === pos && slotSeleccionado.idx === i;
+      if (j) {
+        const pts = j.pts_fecha !== undefined ? j.pts_fecha : '—';
+        html += `<div class="jugador-slot ${selSel?'selected':''}" onclick="seleccionarSlot('${pos}',${i})">
+          ${makeCamisa(j, 36)}
+          <div class="j-nombre">${j.nombre.split(' ').slice(-1)[0]}</div>
+          <div class="j-pts ${ptsClass(j.pts_fecha)}">${pts>0?'+':''}${pts}P</div>
+        </div>`;
+      } else {
+        html += `<div class="jugador-slot vacio" onclick="seleccionarSlot('${pos}',${i})">
+          <div class="camisa"><div class="j-vacio">+</div></div>
+          <div class="j-vacio">Vacío</div>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+  });
+
+  html += `</div>
+    <div class="sups">
+      <div class="sups-tit">Suplentes (1 por posición)</div>
+      <div class="sup-row">`;
+
+  ['ARQ','DEF','MED','DEL'].forEach(pos => {
+    const sup = suplentes.find(e => e.jugador.posicion === pos);
+    const selSup = supSeleccionado && supSeleccionado.posicion === pos;
+    if (sup) {
+      html += `<div class="sup-card ${selSup?'selected':''}" onclick="seleccionarSuplente('${pos}')">
+        ${makeCamisa(sup.jugador, 28)}
+        <div class="sup-nombre">${sup.jugador.nombre.split(' ').slice(-1)[0]}</div>
+        <div class="sup-info">${posBadge(pos)}</div>
+        <div class="sup-pts">${sup.jugador.pts_fecha||0}P</div>
+      </div>`;
+    } else {
+      html += `<div class="sup-card" style="opacity:.5;">
+        <div class="sup-camisa" style="background:var(--gris-borde);margin:0 auto 3px;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;">+</div>
+        <div class="sup-info">${posBadge(pos)}</div>
+        <div class="sup-nombre">Vacío</div>
+      </div>`;
+    }
+  });
+
+  html += `</div></div>
+    <div class="btn-row">
+      <button class="btn" onclick="cancelarSeleccion()">Cancelar</button>
+      <button class="btn btn-g" onclick="abrirModalCambio()">Confirmar cambio</button>
+    </div>
+  </div>`;
+
+  document.getElementById('equipo-content').innerHTML = html;
 }
 
-// ── CANCHA ────────────────────────────────────────────────
-function makeCamisa(j, size=36) {
+function renderArmarEquipo() {
+  document.getElementById('equipo-content').innerHTML = `
+  <div class="armar-paso">
+    <div class="paso-num">Bienvenido</div>
+    <div class="paso-titulo">¡Armá tu equipo!</div>
+    <div class="reglas-lista">
+      💰 Presupuesto: <span>$${PRESUPUESTO_INICIAL}M</span><br>
+      👕 Plantel: <span>15 jugadores</span> (11 titulares + 4 suplentes)<br>
+      🥅 <span>2 ARQ</span> obligatorios (1 titular, 1 suplente)<br>
+      🛡 Mínimo <span>4 DEF</span> (1 suplente)<br>
+      ⚡ Mínimo <span>4 MED</span> (1 suplente)<br>
+      ⚽ Mínimo <span>3 DEL</span> (1 suplente)<br>
+      🏟 Máximo <span>6 jugadores</span> del mismo club<br>
+      🔄 <span>1 cambio gratis</span> por fecha
+    </div>
+  </div>
+  <div class="aviso aviso-info">Andá al <strong>Mercado</strong> para elegir tus jugadores</div>
+  `;
+}
+
+// ── HELPERS VISUALES ──────────────────────────────────────
+function makeCamisa(j, size = 36) {
   const c1 = j.clubes?.color1 || '#555';
   const c2 = j.clubes?.color2 || '#777';
   const ini = j.nombre.split(' ').pop().charAt(0);
   return `<div class="camisa" style="width:${size}px;height:${size}px;">
     <div class="camisa-bg"><div class="camisa-half" style="background:${c1}"></div><div class="camisa-half" style="background:${c2}"></div></div>
-    <span class="camisa-ini" style="font-size:${size*0.35}px;">${ini}</span>
+    <span class="camisa-ini" style="font-size:${Math.round(size*0.35)}px;">${ini}</span>
   </div>`;
 }
 
@@ -485,97 +597,151 @@ function posBadge(pos) {
 }
 
 function ptsClass(p) {
-  if (!p && p!==0) return 'pts-neu';
-  if (p > 0) return 'pts-pos';
-  if (p < 0) return 'pts-neg';
-  return 'pts-neu';
+  if (p === undefined || p === null) return 'pts-neu';
+  return p > 0 ? 'pts-pos' : p < 0 ? 'pts-neg' : 'pts-neu';
 }
 
-function renderCancha() {
-  ['DEL','MED','DEF','ARQ'].forEach(pos => {
-    const linea = document.getElementById('linea-' + pos.toLowerCase());
-    const jgs = titulares.filter(j => j.posicion === pos);
-    if (jgs.length === 0) {
-      linea.innerHTML = `<div style="color:rgba(255,255,255,.4);font-size:10px;">Sin jugadores</div>`;
-      return;
-    }
-    linea.innerHTML = jgs.map(j => {
-      const pts = j.pts_fecha !== undefined ? j.pts_fecha : '—';
-      const sel = seleccionado && seleccionado.id === j.id;
-      return `<button class="jugador-btn ${sel?'selected':''}" onclick="seleccionarTitular(${j.id})">
-        ${makeCamisa(j, 36)}
-        <div class="j-nombre">${j.nombre.split(' ').slice(-1)[0]}</div>
-        <div class="j-pts ${ptsClass(j.pts_fecha)}">${pts > 0 ? '+' : ''}${pts}P</div>
-      </button>`;
-    }).join('');
-  });
+// ── CAMBIO DE FORMACIÓN ───────────────────────────────────
+async function cambiarFormacion(fid) {
+  if (fid === formacionActual) return;
+  const form = FORMACIONES.find(f => f.id === fid);
+  const actual = FORMACIONES.find(f => f.id === formacionActual);
 
-  const supRow = document.getElementById('linea-sup');
-  supRow.innerHTML = suplentes.map(s => {
-    const pts = s.pts_fecha !== undefined ? s.pts_fecha : '—';
-    return `<div class="sup-card">
-      ${makeCamisa(s, 28)}
-      <div class="sup-nombre">${s.nombre.split(' ').slice(-1)[0]}</div>
-      <div class="sup-info">${posBadge(s.posicion)}</div>
-      <div class="sup-pts">${pts}P</div>
-    </div>`;
-  }).join('');
-}
+  // Verificar que el plantel actual se adapta
+  const titulares = getTitulares();
+  const def = titulares.filter(e => e.jugador.posicion === 'DEF').length;
+  const med = titulares.filter(e => e.jugador.posicion === 'MED').length;
+  const del = titulares.filter(e => e.jugador.posicion === 'DEL').length;
 
-function seleccionarTitular(id) {
-  const j = titulares.find(x => x.id === id);
-  seleccionado = seleccionado?.id === id ? null : j;
-  renderCancha();
-}
+  formacionActual = fid;
 
-function cancelarCambio() {
-  seleccionado = null;
-  renderCancha();
-}
-
-async function confirmarCambio() {
-  if (!seleccionado) { alert('Seleccioná un jugador para cambiar'); return; }
-  if (cambiosUsados >= 1) {
-    if (!confirm('Ya usaste tu cambio gratuito. Este cambio tiene costo adicional ($200). ¿Confirmás?')) return;
+  if (equipoActual) {
+    await sb.from('equipos').update({ formacion: fid }).eq('id', equipoActual.id);
   }
-  // Registrar cambio en DB (simplificado — sale el seleccionado, sin reemplazo aún)
+  renderMiEquipo();
+}
+
+// ── SELECCIÓN PARA CAMBIO ─────────────────────────────────
+function seleccionarSlot(pos, idx) {
+  if (slotSeleccionado?.pos === pos && slotSeleccionado?.idx === idx) {
+    slotSeleccionado = null;
+  } else {
+    slotSeleccionado = { pos, idx };
+    supSeleccionado = null;
+  }
+  renderMiEquipo();
+}
+
+function seleccionarSuplente(pos) {
+  const sup = getSuplentes().find(e => e.jugador.posicion === pos);
+  if (!sup) return;
+  if (supSeleccionado?.posicion === pos) {
+    supSeleccionado = null;
+  } else {
+    supSeleccionado = sup.jugador;
+    slotSeleccionado = null;
+  }
+  renderMiEquipo();
+}
+
+function cancelarSeleccion() {
+  slotSeleccionado = null;
+  supSeleccionado = null;
+  renderMiEquipo();
+}
+
+function abrirModalCambio() {
+  if (!slotSeleccionado && !supSeleccionado) {
+    alert('Seleccioná un jugador titular para reemplazar');
+    return;
+  }
+  if (slotSeleccionado && !supSeleccionado) {
+    alert('Ahora seleccioná el suplente que entra');
+    return;
+  }
+  if (!slotSeleccionado && supSeleccionado) {
+    alert('Ahora seleccioná el titular que sale');
+    return;
+  }
+
+  const titulares = getTitulares();
+  const posDef = slotSeleccionado.pos;
+  const jugPos = titulares.filter(e => e.jugador.posicion === posDef);
+  const sale = jugPos[slotSeleccionado.idx];
+  const entra = supSeleccionado;
+
+  if (sale.jugador.posicion !== entra.posicion) {
+    alert(`No podés cambiar un ${sale.jugador.posicion} por un ${entra.posicion}. Las posiciones deben coincidir.`);
+    return;
+  }
+
+  const esPago = cambiosUsados >= 1;
+  document.getElementById('modal-cambio-titulo').textContent = esPago ? '⚠ Cambio con costo' : 'Confirmar cambio';
+  document.getElementById('modal-cambio-desc').textContent =
+    `Sale: ${sale.jugador.nombre}\nEntra: ${entra.nombre}${esPago ? `\n\nEste cambio tiene un costo de $${COSTO_CAMBIO_EXTRA.toLocaleString()} (ya usaste tu cambio gratuito).` : ''}`;
+  document.getElementById('modal-cambio').classList.add('open');
+}
+
+async function ejecutarCambio() {
+  const titulares = getTitulares();
+  const posDef = slotSeleccionado.pos;
+  const jugPos = titulares.filter(e => e.jugador.posicion === posDef);
+  const sale = jugPos[slotSeleccionado.idx];
+  const entra = getSuplentes().find(e => e.jugador.posicion === supSeleccionado.posicion);
+
+  // Swap en DB
+  await sb.from('equipo_jugadores').update({ es_titular: false }).eq('id', sale.id);
+  await sb.from('equipo_jugadores').update({ es_titular: true }).eq('id', entra.id);
+
   if (fechaActual && equipoActual) {
     await sb.from('cambios').insert({
       equipo_id: equipoActual.id,
       fecha_id: fechaActual.id,
-      jugador_sale: seleccionado.id,
-      jugador_entra: seleccionado.id,
+      jugador_sale: sale.jugador_id,
+      jugador_entra: entra.jugador_id,
       es_pago: cambiosUsados >= 1
     });
     cambiosUsados++;
   }
-  seleccionado = null;
-  actualizarAvisoCambio();
-  renderCancha();
+
+  cerrarModalCambio();
+  slotSeleccionado = null;
+  supSeleccionado = null;
+  await cargarMiEquipo();
 }
+
+function cerrarModalCambio() { document.getElementById('modal-cambio').classList.remove('open'); }
 
 // ── MERCADO ───────────────────────────────────────────────
 function renderMercado() {
-  const filtro = mercadoFiltro;
-  let jgs = todosJugadores;
-  if (filtro !== 'todos') jgs = jgs.filter(j => j.posicion === filtro);
+  const misIds = new Set(plantel.map(e => e.jugador_id));
+  const gastado = plantel.reduce((s, e) => s + parseFloat(e.jugador?.valor || 0), 0);
+  const restante = PRESUPUESTO_INICIAL - gastado;
 
-  // Excluir los que ya están en mi equipo
-  const misIds = new Set([...titulares, ...suplentes].map(j => j.id));
-  jgs = jgs.filter(j => !misIds.has(j.id));
+  // Contar por club
+  const clubCount = {};
+  plantel.forEach(e => {
+    const cid = e.jugador?.clubes?.id;
+    if (cid) clubCount[cid] = (clubCount[cid] || 0) + 1;
+  });
+
+  let jgs = todosJugadores.filter(j => !misIds.has(j.id));
+  if (mercadoFiltro !== 'todos') jgs = jgs.filter(j => j.posicion === mercadoFiltro);
+  jgs.sort((a, b) => parseFloat(b.valor) - parseFloat(a.valor));
 
   document.getElementById('lista-mercado').innerHTML = jgs.length === 0
     ? '<div style="text-align:center;padding:20px;color:var(--txt-m);font-size:13px;">No hay jugadores disponibles</div>'
-    : jgs.map(j => `
-      <div class="m-row" onclick="abrirModalFichar(${j.id})">
-        ${makeCamisa(j, 34)}
-        <div style="flex:1">
-          <div class="m-nombre">${posBadge(j.posicion)}${j.nombre}</div>
-          <div class="m-detalle">${j.clubes?.nombre || ''}</div>
-        </div>
-        <span class="m-pts" style="margin-right:6px">—P</span>
-        <span class="m-valor">$${parseFloat(j.valor).toFixed(1)}M</span>
-      </div>`).join('');
+    : jgs.map(j => {
+        const puedeComprar = parseFloat(j.valor) <= restante && (clubCount[j.clubes?.id] || 0) < MAX_MISMO_CLUB;
+        return `<div class="m-row ${!puedeComprar?'no-comprable':''}" onclick="${puedeComprar?`abrirModalFichar(${j.id})`:''}">
+          ${makeCamisa(j, 34)}
+          <div style="flex:1">
+            <div class="m-nombre">${posBadge(j.posicion)}${j.nombre}</div>
+            <div class="m-detalle">${j.clubes?.nombre||''} ${(clubCount[j.clubes?.id]||0)>=MAX_MISMO_CLUB?'· <span style="color:var(--rojo);font-size:10px;">Máx. club</span>':''}</div>
+          </div>
+          <span class="m-valor" style="${parseFloat(j.valor)>restante?'background:var(--rojo-l);color:var(--rojo);border-color:var(--rojo);':''}">$${parseFloat(j.valor).toFixed(1)}M</span>
+        </div>`;
+      }).join('');
 }
 
 function filtrarMercado(pos, btn) {
@@ -588,24 +754,66 @@ function filtrarMercado(pos, btn) {
 function abrirModalFichar(id) {
   jugadorFichar = todosJugadores.find(j => j.id === id);
   if (!jugadorFichar) return;
+
+  // Validaciones
+  const gastado = plantel.reduce((s, e) => s + parseFloat(e.jugador?.valor || 0), 0);
+  const restante = PRESUPUESTO_INICIAL - gastado;
+  if (parseFloat(jugadorFichar.valor) > restante) {
+    alert('No tenés presupuesto suficiente'); return;
+  }
+
+  const clubCount = {};
+  plantel.forEach(e => { const cid = e.jugador?.clubes?.id; if (cid) clubCount[cid] = (clubCount[cid]||0)+1; });
+  if ((clubCount[jugadorFichar.clubes?.id]||0) >= MAX_MISMO_CLUB) {
+    alert(`Ya tenés ${MAX_MISMO_CLUB} jugadores de ${jugadorFichar.clubes?.nombre}`); return;
+  }
+
+  const titulares = getTitulares();
+  const suplentes = getSuplentes();
+  const esTitular = titulares.filter(e => e.jugador.posicion === jugadorFichar.posicion).length < FORMACIONES.find(f=>f.id===formacionActual)[jugadorFichar.posicion==='DEF'?'def':jugadorFichar.posicion==='MED'?'med':jugadorFichar.posicion==='DEL'?'del':'arq']
+    || (jugadorFichar.posicion === 'ARQ' && titulares.filter(e=>e.jugador.posicion==='ARQ').length < 1);
+  const haySupPos = suplentes.some(e => e.jugador.posicion === jugadorFichar.posicion);
+
+  let destino = esTitular ? 'titular' : (!haySupPos ? 'suplente' : null);
+  if (!destino) { alert(`Ya completaste los titulares y suplentes de posición ${jugadorFichar.posicion}`); return; }
+
   document.getElementById('modal-titulo').textContent = `Fichar a ${jugadorFichar.nombre}`;
   document.getElementById('modal-desc').textContent =
-    `${jugadorFichar.posicion} · ${jugadorFichar.clubes?.nombre} · $${parseFloat(jugadorFichar.valor).toFixed(1)}M. ¿Confirmás el fichaje?`;
+    `${jugadorFichar.posicion} · ${jugadorFichar.clubes?.nombre} · $${parseFloat(jugadorFichar.valor).toFixed(1)}M\nVa a entrar como ${destino}.`;
   document.getElementById('modal-fichar').classList.add('open');
 }
 
-function cerrarModal() {
-  document.getElementById('modal-fichar').classList.remove('open');
-  jugadorFichar = null;
-}
+function cerrarModal() { document.getElementById('modal-fichar').classList.remove('open'); jugadorFichar = null; }
 
-async function ficharJugador() {
-  if (!jugadorFichar || !equipoActual) { cerrarModal(); return; }
+async function confirmarFichar() {
+  if (!jugadorFichar) { cerrarModal(); return; }
+
+  // Crear equipo si no existe
+  if (!equipoActual) {
+    const { data: eq } = await sb.from('equipos').insert({
+      usuario_id: usuarioActual.id,
+      nombre: usuarioActual.nombre + ' FC',
+      presupuesto: PRESUPUESTO_INICIAL,
+      formacion: formacionActual
+    }).select().single();
+    equipoActual = eq;
+  }
+
+  // Determinar si es titular o suplente
+  const titulares = getTitulares();
+  const suplentes = getSuplentes();
+  const form = FORMACIONES.find(f => f.id === formacionActual);
+  const limTit = jugadorFichar.posicion === 'ARQ' ? 1
+    : jugadorFichar.posicion === 'DEF' ? form.def
+    : jugadorFichar.posicion === 'MED' ? form.med : form.del;
+  const esTitular = titulares.filter(e => e.jugador.posicion === jugadorFichar.posicion).length < limTit;
+
   await sb.from('equipo_jugadores').insert({
     equipo_id: equipoActual.id,
     jugador_id: jugadorFichar.id,
-    es_titular: titulares.length < 11
+    es_titular: esTitular
   });
+
   cerrarModal();
   await cargarMiEquipo();
   renderMercado();
@@ -615,9 +823,8 @@ async function ficharJugador() {
 async function cargarTabla() {
   const { data: equipos } = await sb.from('equipos').select('id,nombre,usuario_id');
   if (!equipos) return;
-
-  // Sumar puntos de todos los equipos
   const posClases = ['gold','silver','bronze'];
+
   const rows = await Promise.all(equipos.map(async eq => {
     const { data: ej } = await sb.from('equipo_jugadores')
       .select('jugador_id').eq('equipo_id', eq.id).eq('es_titular', true);
@@ -625,20 +832,19 @@ async function cargarTabla() {
     const ids = ej.map(e => e.jugador_id);
     const { data: pts } = await sb.from('puntos')
       .select('puntos').eq('fecha_id', fechaActual.id).in('jugador_id', ids);
-    const total = pts ? pts.reduce((s,p) => s + p.puntos, 0) : 0;
+    const total = pts ? pts.reduce((s, p) => s + p.puntos, 0) : 0;
     return { nombre: eq.nombre, pts: total, me: eq.usuario_id === usuarioActual?.id };
   }));
 
-  rows.sort((a,b) => b.pts - a.pts);
-
-  // Mi posición
+  rows.sort((a, b) => b.pts - a.pts);
   const miPos = rows.findIndex(r => r.me) + 1;
-  if (miPos > 0) document.getElementById('mi-pos').textContent = `${miPos}°`;
+  const miPosEl = document.getElementById('mi-pos');
+  if (miPosEl && miPos > 0) miPosEl.textContent = `${miPos}°`;
 
-  document.getElementById('lista-tabla').innerHTML = rows.map((r,i) => `
+  document.getElementById('lista-tabla').innerHTML = rows.map((r, i) => `
     <div class="tabla-row">
       <div class="t-pos ${posClases[i]||''}">${i+1}</div>
-      <div class="t-name">${r.nombre} ${r.me ? '<span class="yo-badge">Yo</span>' : ''}</div>
+      <div class="t-name">${r.nombre} ${r.me?'<span class="yo-badge">Yo</span>':''}</div>
       <div class="t-pts">${r.pts}</div>
     </div>`).join('');
 }
@@ -662,21 +868,26 @@ function renderAdmin() {
 
 async function guardarPuntos(btn) {
   if (!fechaActual) { alert('No hay fecha activa'); return; }
-  btn.textContent = 'Guardando...';
-  btn.disabled = true;
-
+  btn.textContent = 'Guardando...'; btn.disabled = true;
   const inserts = todosJugadores.map(j => ({
     jugador_id: j.id,
     fecha_id: fechaActual.id,
     puntos: parseInt(document.getElementById(`adm-${j.id}`)?.value || 0)
   }));
-
   await sb.from('puntos').upsert(inserts, { onConflict: 'jugador_id,fecha_id' });
-
-  btn.textContent = '✓ Guardado';
+  btn.textContent = '✓ Guardado'; 
   setTimeout(() => { btn.textContent = 'Guardar puntos'; btn.disabled = false; }, 2000);
   await cargarMiEquipo();
   await cargarTabla();
+}
+
+async function nuevaFecha() {
+  if (!confirm('¿Cerrás la fecha actual y abrís la siguiente?')) return;
+  if (fechaActual) await sb.from('fechas').update({ cerrada: true }).eq('id', fechaActual.id);
+  const numNueva = fechaActual ? fechaActual.numero + 1 : 1;
+  await sb.from('fechas').insert({ numero: numNueva, cerrada: false });
+  alert(`Fecha ${numNueva} abierta. Los cambios se reinician para todos.`);
+  location.reload();
 }
 
 // ── NAVEGACIÓN ────────────────────────────────────────────
@@ -685,6 +896,7 @@ function showTab(tab, btn) {
   document.getElementById('sec-'+tab).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  if (tab === 'tabla') cargarTabla();
 }
 
 // ── INIT ──────────────────────────────────────────────────
