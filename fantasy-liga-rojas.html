@@ -1014,8 +1014,21 @@ async function ejecutarCambio(){
 
 // ── CONFIRMAR EQUIPO ──────────────────────────────────────
 async function confirmarEquipo(){
-  if(totalJug()<15){alert('Completá los 15 jugadores primero');return;}
-  
+  // Verificar 15 jugadores completos
+  const total=totalJug();
+  if(total<15){
+    const faltantes=[];
+    if(!plantel['ARQ-0']) faltantes.push('ARQ titular');
+    if(!plantel['sup-ARQ']) faltantes.push('ARQ suplente');
+    for(let i=0;i<formacion.def;i++) if(!plantel[`DEF-${i}`]) faltantes.push(`DEF ${i+1}`);
+    if(!plantel['sup-DEF']) faltantes.push('DEF suplente');
+    for(let i=0;i<formacion.med;i++) if(!plantel[`MED-${i}`]) faltantes.push(`MED ${i+1}`);
+    if(!plantel['sup-MED']) faltantes.push('MED suplente');
+    for(let i=0;i<formacion.del;i++) if(!plantel[`DEL-${i}`]) faltantes.push(`DEL ${i+1}`);
+    if(!plantel['sup-DEL']) faltantes.push('DEL suplente');
+    alert(`Te faltan ${15-total} jugador(es):\n${faltantes.slice(0,5).join(', ')}`);
+    return;
+  }
   const btn=document.getElementById('btn-confirm');
   btn.textContent='Guardando...';btn.disabled=true;
 
@@ -1247,28 +1260,37 @@ function renderMobLista(){
 }
 
 async function mobFichar(id){
+  const j=todosJugadores.find(x=>x.id===id);if(!j) return;
+  
   if(!slotActivo){
-    // Buscar primer slot vacío
-    const lineas=[{pos:'ARQ',cant:1},{pos:'DEF',cant:formacion.def},{pos:'MED',cant:formacion.med},{pos:'DEL',cant:formacion.del}];
-    for(const{pos,cant} of lineas){
+    // Buscar primer slot vacío que coincida con la posición del jugador
+    const pos=j.posicion;
+    if(pos==='ARQ'){
+      if(!plantel['ARQ-0']) slotActivo='ARQ-0';
+      else if(!plantel['sup-ARQ']) slotActivo='sup-ARQ';
+    } else {
+      const cant=pos==='DEF'?formacion.def:pos==='MED'?formacion.med:formacion.del;
       for(let i=0;i<cant;i++){
         if(!plantel[`${pos}-${i}`]){slotActivo=`${pos}-${i}`;break;}
       }
-      if(slotActivo) break;
+      if(!slotActivo&&!plantel[`sup-${pos}`]) slotActivo=`sup-${pos}`;
     }
     if(!slotActivo){
-      // Buscar suplente vacío
-      for(const pos of ['ARQ','DEF','MED','DEL']){
-        if(!plantel[`sup-${pos}`]){slotActivo=`sup-${pos}`;break;}
-      }
+      alert(`No hay slots vacíos para ${pos}`);
+      cerrarMobLista();return;
     }
-    if(!slotActivo){cerrarMobLista();return;}
+  } else {
+    // Verificar que la posición del jugador coincide con el slot activo
+    const posSlot=slotActivo.startsWith('sup-')?slotActivo.replace('sup-',''):slotActivo.split('-')[0];
+    if(j.posicion!==posSlot){
+      alert(`Este slot es para ${posSlot}, elegí un ${posSlot}`);
+      return;
+    }
   }
+
   await fichar(id);
   cerrarMobLista();
-  // Actualizar botón mobile
-  const btnMob=document.getElementById('btn-confirm-mob');
-  if(btnMob) btnMob.disabled=totalJug()<15;
+  actualizarMobile();
 }
 
 window.addEventListener('resize',actualizarMobile);
