@@ -177,6 +177,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 
 /* PANEL */
 .panel{width:190px;background:var(--bg2);border-left:1px solid var(--borde);display:flex;flex-direction:column;overflow:hidden;}
+
+/* MOBILE MODAL JUGADORES */
+.mob-lista-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:150;flex-direction:column;}
+.mob-lista-overlay.open{display:flex;}
+.mob-lista-header{padding:12px 14px;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);}
+.mob-lista-titulo{font-size:14px;font-weight:600;}
+.mob-cerrar{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px;}
+.mob-filtros{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--borde);background:var(--bg2);}
+.mob-search{padding:8px 12px;border-bottom:1px solid var(--borde);background:var(--bg2);}
+.mob-search input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--borde);border-radius:8px;color:#fff;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.mob-aviso{padding:8px 14px;font-size:11px;color:#fde68a;background:rgba(202,138,4,.1);border-bottom:1px solid var(--borde);text-align:center;}
+.mob-jg-lista{flex:1;overflow-y:auto;}
+.mob-jg-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;}
+.mob-jg-row:hover{background:var(--bg3);}
+.mob-jg-row.no-puede{opacity:.35;cursor:not-allowed;}
+.mob-jg-nombre{font-size:13px;font-weight:600;color:#fff;}
+.mob-jg-club{font-size:10px;color:var(--txt-s);}
+.mob-jg-valor{font-size:12px;font-weight:600;color:#ca8a04;white-space:nowrap;}
+.btn-ver-lista{background:var(--verde);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;}
+
+@media (max-width: 600px) {
+  .edit-body{flex-direction:column;}
+  .panel{display:none;}
+  .cancha-col{flex:none;height:auto;}
+  .lineas{min-height:0;padding:2px;}
+  .slot{min-width:44px;}
+  .s-cam{width:32px;height:32px;}
+  .s-name{font-size:6.5px;max-width:44px;}
+  .edit-wrap{height:auto;min-height:calc(100vh - 120px);}
+  .mob-btn-wrap{padding:10px 12px;background:var(--bg);border-top:1px solid var(--borde);}
+  .edit-top{flex-wrap:wrap;gap:6px;}
+  .form-chips{order:3;width:100%;}
+  .sups-bar{padding:4px 5px;}
+  .sup-slot{padding:3px 4px;}
+}
 .panel-filtros{display:flex;gap:2px;padding:6px 6px;border-bottom:1px solid var(--borde);flex-wrap:wrap;}
 .pfiltro{padding:3px 6px;border-radius:20px;border:1px solid var(--borde);background:transparent;font-size:9px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--txt-m);transition:all .12s;}
 .pfiltro:hover{color:#fff;}
@@ -395,7 +430,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
           </div>
         </div>
       </div>
+      <!-- MOBILE: botón para abrir lista -->
+      <div class="mob-btn-wrap" id="mob-btn-wrap" style="display:none;">
+        <button class="btn-ver-lista" onclick="abrirMobLista()" id="mob-abrir-btn">+ Agregar jugador</button>
+        <button class="btn-confirm" id="btn-confirm-mob" style="margin-top:8px;width:100%;padding:10px;font-size:13px;" disabled onclick="confirmarEquipo()">Confirmar equipo 👑</button>
+      </div>
     </div>
+  </div>
+
+  <!-- MOBILE MODAL LISTA -->
+  <div class="mob-lista-overlay" id="mob-lista-overlay">
+    <div class="mob-lista-header">
+      <div class="mob-lista-titulo" id="mob-titulo">Elegí un jugador</div>
+      <button class="mob-cerrar" onclick="cerrarMobLista()">✕</button>
+    </div>
+    <div class="mob-filtros">
+      <button class="pfiltro active" onclick="setPF('todos',this);renderMobLista()">Todos</button>
+      <button class="pfiltro" onclick="setPF('ARQ',this);renderMobLista()">ARQ</button>
+      <button class="pfiltro" onclick="setPF('DEF',this);renderMobLista()">DEF</button>
+      <button class="pfiltro" onclick="setPF('MED',this);renderMobLista()">MED</button>
+      <button class="pfiltro" onclick="setPF('DEL',this);renderMobLista()">DEL</button>
+    </div>
+    <div class="mob-search"><input type="text" id="mob-buscar" placeholder="Buscar jugador..." oninput="renderMobLista()"></div>
+    <div class="mob-aviso" id="mob-aviso">Tocá un jugador para ficharlo</div>
+    <div class="mob-jg-lista" id="mob-jg-lista"></div>
   </div>
 
   <!-- TABLA -->
@@ -595,6 +653,7 @@ async function cargarDatos(){
 
   await cargarMiEquipo();
   renderAdmin();
+  actualizarMobile();
 }
 
 // ── MI EQUIPO ─────────────────────────────────────────────
@@ -771,7 +830,7 @@ function renderCancha(){
 }
 
 function activarSlot(key){
-  if(enVeda){return;}
+  if(enVeda) return;
   slotActivo=slotActivo===key?null:key;
   renderCancha();
   actualizarAviso();
@@ -780,6 +839,8 @@ function activarSlot(key){
     document.querySelectorAll('.pfiltro').forEach(b=>{b.classList.toggle('active',b.textContent===pos);});
     pFiltro=pos;
     renderLista();
+    // En mobile abrir la lista automáticamente
+    if(esMobile()) abrirMobLista();
   }
 }
 
@@ -1063,7 +1124,89 @@ async function guardarPuntos(btn){
   await cargarMiEquipo();await cargarTabla();
 }
 
-// ── NAV ───────────────────────────────────────────────────
+// ── MOBILE ────────────────────────────────────────────────
+function esMobile(){return window.innerWidth<=600;}
+
+function actualizarMobile(){
+  const mob=esMobile();
+  const panel=document.getElementById('mob-btn-wrap');
+  if(panel) panel.style.display=mob?'block':'none';
+}
+
+function abrirMobLista(){
+  if(!slotActivo){
+    // Si no hay slot activo, mostrar todos
+    document.getElementById('mob-titulo').textContent='Elegí un jugador';
+  } else {
+    const pos=slotActivo.startsWith('sup-')?slotActivo.replace('sup-',''):slotActivo.split('-')[0];
+    document.getElementById('mob-titulo').textContent=`Elegí un ${pos}`;
+  }
+  renderMobLista();
+  document.getElementById('mob-lista-overlay').classList.add('open');
+}
+
+function cerrarMobLista(){
+  document.getElementById('mob-lista-overlay').classList.remove('open');
+}
+
+function renderMobLista(){
+  const busq=document.getElementById('mob-buscar')?.value.toLowerCase()||'';
+  const enPlantel=new Set(Object.values(plantel).filter(Boolean).map(j=>j.id));
+  const g=gastado();
+  const clubCount={};
+  Object.values(plantel).filter(Boolean).forEach(j=>{const cid=j.clubes?.id;if(cid) clubCount[cid]=(clubCount[cid]||0)+1;});
+  let posSlot=null;
+  if(slotActivo) posSlot=slotActivo.startsWith('sup-')?slotActivo.replace('sup-',''):slotActivo.split('-')[0];
+  let jgs=todosJugadores.filter(j=>!enPlantel.has(j.id));
+  if(posSlot) jgs=jgs.filter(j=>j.posicion===posSlot);
+  else if(pFiltro!=='todos') jgs=jgs.filter(j=>j.posicion===pFiltro);
+  if(busq) jgs=jgs.filter(j=>j.nombre.toLowerCase().includes(busq)||(j.clubes?.nombre||'').toLowerCase().includes(busq));
+  jgs.sort((a,b)=>parseFloat(b.valor)-parseFloat(a.valor));
+  const puede=j=>parseFloat(j.valor)<=(PRESUPUESTO-g)&&(clubCount[j.clubes?.id]||0)<MAX_CLUB;
+
+  // Aviso
+  const av=document.getElementById('mob-aviso');
+  if(av) av.textContent=slotActivo?`Fichando en posición ${posSlot}`:'Tocá un slot en la cancha primero';
+
+  const lista=document.getElementById('mob-jg-lista');if(!lista) return;
+  if(jgs.length===0){lista.innerHTML=`<div style="text-align:center;padding:30px;color:#555;font-size:13px;">Sin jugadores disponibles</div>`;return;}
+  lista.innerHTML=jgs.map(j=>`
+    <div class="mob-jg-row ${!puede(j)||enVeda?'no-puede':''}" onclick="${puede(j)&&!enVeda?`mobFichar(${j.id})`:''}">
+      ${makeCam(j,32)}
+      <div style="flex:1;min-width:0;">
+        <div class="mob-jg-nombre">${posTag(j.posicion)}${j.nombre}</div>
+        <div class="mob-jg-club">${j.clubes?.nombre||''}</div>
+      </div>
+      <div class="mob-jg-valor" style="${parseFloat(j.valor)>(PRESUPUESTO-g)?'color:#f87171;':''}">$${parseFloat(j.valor).toFixed(1)}M</div>
+    </div>`).join('');
+}
+
+async function mobFichar(id){
+  if(!slotActivo){
+    // Buscar primer slot vacío
+    const lineas=[{pos:'ARQ',cant:1},{pos:'DEF',cant:formacion.def},{pos:'MED',cant:formacion.med},{pos:'DEL',cant:formacion.del}];
+    for(const{pos,cant} of lineas){
+      for(let i=0;i<cant;i++){
+        if(!plantel[`${pos}-${i}`]){slotActivo=`${pos}-${i}`;break;}
+      }
+      if(slotActivo) break;
+    }
+    if(!slotActivo){
+      // Buscar suplente vacío
+      for(const pos of ['ARQ','DEF','MED','DEL']){
+        if(!plantel[`sup-${pos}`]){slotActivo=`sup-${pos}`;break;}
+      }
+    }
+    if(!slotActivo){cerrarMobLista();return;}
+  }
+  await fichar(id);
+  cerrarMobLista();
+  // Actualizar botón mobile
+  const btnMob=document.getElementById('btn-confirm-mob');
+  if(btnMob) btnMob.disabled=totalJug()<15;
+}
+
+window.addEventListener('resize',actualizarMobile);
 function showTab(tab,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
