@@ -110,6 +110,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .pts-p{background:rgba(74,222,128,.25);color:#86efac;}
 .pts-n{background:rgba(239,68,68,.25);color:#fca5a5;}
 .pts-0{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);}
+.cap-crown{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:12px;line-height:1;}
+.slot-actions{display:flex;gap:3px;margin-top:2px;}
+.slot-del{background:rgba(220,38,38,.2);border:none;color:#f87171;border-radius:4px;font-size:8px;padding:1px 5px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.slot-del:hover{background:rgba(220,38,38,.4);}
+.slot-cap{background:rgba(251,191,36,.15);border:none;color:#fbbf24;border-radius:4px;font-size:8px;padding:1px 5px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.slot-cap:hover{background:rgba(251,191,36,.3);}
+.veda-banner{background:rgba(220,38,38,.15);border-bottom:1px solid rgba(220,38,38,.3);padding:6px 12px;text-align:center;font-size:11px;font-weight:600;color:#f87171;}
+.btn-cap{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:11px;font-weight:600;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-cap:hover{background:rgba(251,191,36,.2);}
+
+/* MODAL CAPITÁN */
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.cap-jg{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border:1px solid #2a2a2a;border-radius:10px;cursor:pointer;transition:all .15s;}
+.cap-jg:hover{border-color:#fbbf24;background:rgba(251,191,36,.05);}
+.cap-jg.selected{border:2px solid #fbbf24;background:rgba(251,191,36,.1);}
+.cap-nombre{font-size:9px;font-weight:600;color:#fff;text-align:center;line-height:1.2;}
 
 /* SUPLENTES */
 .sups-bar{background:#0d5c2b;border-top:1px solid rgba(255,255,255,.1);padding:6px 8px;display:flex;gap:5px;align-items:center;}
@@ -247,6 +263,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 
   <!-- MI EQUIPO -->
   <div id="sec-equipo" class="section active">
+    <div id="veda-banner" style="display:none;" class="veda-banner">🔒 VEDA ACTIVA — No se pueden realizar cambios hasta que termine la fecha</div>
     <div class="equipo-top">
       <div class="presup-info">
         <div class="presup-item">
@@ -266,6 +283,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
         </div>
       </div>
       <div id="aviso-cambio" class="aviso-cambio aviso-ok">✓ 1 cambio gratis</div>
+      <button class="btn-cap" id="btn-cap" onclick="abrirModalCapitan()" style="display:none;">👑 Cambiar capitán</button>
       <div class="form-chips" id="form-chips"></div>
     </div>
 
@@ -295,7 +313,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
         <div class="panel-aviso" id="panel-aviso">Tocá un slot en la cancha</div>
         <div class="jg-lista" id="jg-lista"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
         <div class="panel-footer">
-          <button class="btn-confirm" id="btn-confirm" disabled onclick="confirmarEquipo()">Confirmar equipo</button>
+          <button class="btn-confirm" id="btn-confirm" disabled onclick="confirmarEquipo()">Confirmar equipo 👑</button>
         </div>
       </div>
     </div>
@@ -345,6 +363,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
   </div>
 </div>
 
+<!-- MODAL CAPITÁN -->
+<div class="modal-overlay" id="modal-capitan">
+  <div class="modal">
+    <h3>👑 Elegí tu capitán</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;">El capitán suma el doble de puntos cada fecha.</p>
+    <div class="cap-grid" id="cap-grid"></div>
+    <div class="modal-btns">
+      <button class="btn" style="flex:1" onclick="cerrarModalCapitan()">Cancelar</button>
+      <button class="btn btn-g" style="flex:1" onclick="confirmarCapitan()">Confirmar capitán</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── CONFIG ────────────────────────────────────────────────
 const SUPABASE_URL = 'https://hpptjowqzjwexzatwgyo.supabase.co';
@@ -373,6 +404,8 @@ let pFiltro='todos';
 let cambiosUsados=0;
 let modoRegistro=false;
 let pendienteCambio=null;
+let capitan=null; // jugador_id del capitán
+let enVeda=false; // true cuando la fecha está cerrada
 
 // ── AUTH ──────────────────────────────────────────────────
 function toggleMode(){
@@ -422,9 +455,14 @@ async function cargarDatos(){
   const{data:fechas}=await sb.from('fechas').select('*').eq('cerrada',false).order('numero').limit(1);
   if(fechas?.length>0){
     fechaActual=fechas[0];
+    enVeda=false;
     document.getElementById('hdr-fecha').textContent=`Fecha ${fechaActual.numero}`;
     const tf=document.getElementById('tab-fecha');
     if(tf) tf.textContent=fechaActual.numero;
+  } else {
+    // Todas las fechas cerradas = veda
+    enVeda=true;
+    document.getElementById('veda-banner').style.display='block';
   }
 
   const{data:jgs}=await sb.from('jugadores').select('*,clubes(id,nombre,color1,color2)');
@@ -444,6 +482,7 @@ async function cargarMiEquipo(){
   if(!eq){ plantel={}; actualizarPresup(); return; }
   equipoActual=eq;
   formacion=FORMACIONES.find(f=>f.id===eq.formacion)||FORMACIONES[1];
+  capitan=eq.capitan_id||null;
 
   const{data:ej}=await sb.from('equipo_jugadores')
     .select('*,jugadores(*,clubes(id,nombre,color1,color2))').eq('equipo_id',eq.id);
@@ -483,11 +522,12 @@ async function cargarMiEquipo(){
   renderCancha();
   renderLista();
 
-  // Puntos totales titulares
+  // Puntos totales titulares (capitán suma doble)
   const tits=Object.entries(plantel).filter(([k,v])=>!k.startsWith('sup-')&&v).map(([,v])=>v);
-  const totalPts=tits.reduce((s,j)=>s+(j.pts_fecha||0),0);
+  const totalPts=tits.reduce((s,j)=>s+(j.pts_fecha||0)*(capitan===j.id?2:1),0);
   document.getElementById('mis-pts-top').textContent=totalPts;
   document.getElementById('mis-pts').textContent=totalPts;
+  actualizarBtnCap();
 }
 
 function gastado(){ return Object.values(plantel).reduce((s,j)=>s+(j?.valor||0),0); }
@@ -547,10 +587,15 @@ function renderCancha(){
         if(j){
           const pts=j.pts_fecha!==undefined?j.pts_fecha:'—';
           const pCls=pts>0?'pts-p':pts<0?'pts-n':'pts-0';
-          return `<div class="slot ${activo?'selected':''}" onclick="activarSlot('${key}')">
+          const esCap=capitan===j.id;
+          return `<div class="slot ${activo?'selected':''}" style="position:relative;" onclick="activarSlot('${key}')">
+            ${esCap?'<div class="cap-crown">👑</div>':''}
             ${makeCam(j,38)}
             <div class="slot-name">${j.nombre.split(' ').slice(-1)[0]}</div>
-            <div class="slot-pts ${pCls}">${pts!=='—'&&pts>0?'+':''}${pts}P</div>
+            <div class="slot-pts ${pCls}">${pts!=='—'&&pts>0?'+':''}${pts}${esCap?'×2':''}</div>
+            ${!enVeda?`<div class="slot-actions" onclick="event.stopPropagation()">
+              <button class="slot-del" onclick="eliminarJugador('${key}')">✕</button>
+            </div>`:''}
           </div>`;
         } else {
           return `<div class="slot slot-vacio ${activo?'selected':''}" onclick="activarSlot('${key}')">
@@ -715,6 +760,63 @@ async function fichar(id){
 
 function cerrarModalCambio(){document.getElementById('modal-cambio').classList.remove('open');pendienteCambio=null;}
 
+// ── ELIMINAR JUGADOR ──────────────────────────────────────
+async function eliminarJugador(key){
+  if(enVeda){alert('No se pueden hacer cambios durante la veda');return;}
+  const j=plantel[key];
+  if(!j) return;
+  if(capitan===j.id) capitan=null;
+  if(equipoActual){
+    const{data:filas}=await sb.from('equipo_jugadores').select('id').eq('equipo_id',equipoActual.id).eq('jugador_id',j.id);
+    if(filas?.length>0) await sb.from('equipo_jugadores').delete().eq('id',filas[0].id);
+  }
+  delete plantel[key];
+  slotActivo=null;
+  renderCancha();
+  actualizarPresup();
+  renderLista();
+  actualizarPanelAviso();
+  actualizarBtnCap();
+}
+
+// ── CAPITÁN ───────────────────────────────────────────────
+let capSeleccionado=null;
+
+function actualizarBtnCap(){
+  const btn=document.getElementById('btn-cap');
+  if(!btn) return;
+  btn.style.display=totalJug()>=11?'block':'none';
+  btn.textContent=capitan?'👑 Cambiar capitán':'👑 Elegir capitán';
+}
+
+function abrirModalCapitan(){
+  if(enVeda){alert('No se pueden hacer cambios durante la veda');return;}
+  const tits=Object.entries(plantel).filter(([k,v])=>!k.startsWith('sup-')&&v).map(([,v])=>v);
+  capSeleccionado=capitan;
+  document.getElementById('cap-grid').innerHTML=tits.map(j=>`
+    <div class="cap-jg ${capSeleccionado===j.id?'selected':''}" onclick="selCapitan(${j.id},this)">
+      ${makeCam(j,32)}
+      <div class="cap-nombre">${j.nombre.split(' ').slice(-1)[0]}</div>
+    </div>`).join('');
+  document.getElementById('modal-capitan').classList.add('open');
+}
+
+function selCapitan(id,el){
+  capSeleccionado=id;
+  document.querySelectorAll('.cap-jg').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function confirmarCapitan(){
+  if(!capSeleccionado){alert('Elegí un capitán');return;}
+  capitan=capSeleccionado;
+  if(equipoActual) await sb.from('equipos').update({capitan_id:capitan}).eq('id',equipoActual.id);
+  cerrarModalCapitan();
+  renderCancha();
+}
+
+function cerrarModalCapitan(){document.getElementById('modal-capitan').classList.remove('open');}
+
 async function ejecutarCambio(){
   if(!pendienteCambio) return;
   const{sale,entra,slot}=pendienteCambio;
@@ -756,7 +858,6 @@ async function confirmarEquipo(){
     }).select().single();
     equipoActual=eq;
   }
-  // Guardar todos
   const inserts=Object.entries(plantel).filter(([,v])=>v).map(([k,j])=>({
     equipo_id:equipoActual.id,
     jugador_id:j.id,
@@ -764,7 +865,10 @@ async function confirmarEquipo(){
   }));
   await sb.from('equipo_jugadores').delete().eq('equipo_id',equipoActual.id);
   await sb.from('equipo_jugadores').insert(inserts);
-  alert('¡Equipo guardado!');
+  actualizarBtnCap();
+  // Abrir modal capitán si no tiene uno
+  if(!capitan) abrirModalCapitan();
+  else alert('¡Equipo guardado!');
 }
 
 // ── TABLA ─────────────────────────────────────────────────
